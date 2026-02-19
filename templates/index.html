@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Agentic Vision + Nano Banana — AI clothing analysis and virtual try-on">
+    <title>Agentic Vision — AI Clothing Transfer</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁️</text></svg>">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-icon">👁️</div>
+            <div>
+                <h1>Agentic Vision + Nano Banana</h1>
+                <p class="header-sub">AI-Powered Clothing Analysis & Transfer</p>
+            </div>
+        </div>
+        <div class="header-badges">
+            <span class="badge badge-purple">Gemini 3 Flash</span>
+            <span class="badge badge-pink">Virtual Try-On</span>
+        </div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="container">
+        <div id="status-bar" class="status-bar">
+            <div class="pulse"></div>
+            <span id="status-text"></span>
+        </div>
+    </div>
+
+    <!-- ============ STEP 1: Source Upload + Preview ============ -->
+    <section class="container section-row">
+        <div class="step-label"><span class="step-num">1</span> Source Image</div>
+        <div class="row-grid">
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot purple"></div>
+                    Upload Source
+                </div>
+                <div class="upload-zone" id="source-upload">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click or drag to upload</div>
+                    <div class="upload-hint">The clothing from this image will be analyzed</div>
+                    <input type="file" id="source-input" accept="image/*">
+                </div>
+                <button class="btn btn-primary" id="analyze-btn" disabled>
+                    <div class="spinner"></div>
+                    <span class="btn-text">🔍 Analyze with Agentic Vision</span>
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot green"></div>
+                    Source Preview
+                </div>
+                <div class="output-image-container" id="original-display">
+                    <div class="output-placeholder">
+                        <div class="icon">🖼️</div>
+                        <p>Source image preview</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ STEP 2: Extracted Details ============ -->
+    <section class="container">
+        <div class="step-label"><span class="step-num">2</span> Extracted Details</div>
+        <div class="card">
+            <div class="card-title">
+                <div class="dot green"></div>
+                Analysis Results
+                <button class="details-toggle" id="details-toggle" onclick="toggleDetails()">
+                    ▼ Expand
+                </button>
+            </div>
+            <pre class="details-panel collapsed"
+                id="details-panel"><span class="placeholder">Analysis results will appear here after processing...</span></pre>
+        </div>
+    </section>
+
+    <!-- ============ STEP 3: Target Upload + Generate ============ -->
+    <section class="container section-row">
+        <div class="step-label"><span class="step-num">3</span> Target Person & Generate</div>
+        <div class="row-grid">
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot blue"></div>
+                    Upload Target Person
+                </div>
+                <div class="upload-zone" id="target-upload">
+                    <div class="upload-icon">🧑</div>
+                    <div class="upload-text">Click or drag to upload</div>
+                    <div class="upload-hint">This person will wear the analyzed clothing</div>
+                    <input type="file" id="target-input" accept="image/*">
+                </div>
+                <button class="btn btn-generate" id="generate-btn" disabled>
+                    <div class="spinner"></div>
+                    <span class="btn-text">✨ Generate with Nano Banana</span>
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot pink"></div>
+                    Generated Result
+                </div>
+                <div class="output-image-container" id="generated-display">
+                    <div class="output-placeholder">
+                        <div class="icon">🎨</div>
+                        <p>Generated image will appear here</p>
+                    </div>
+                </div>
+                <button class="btn-download" id="download-btn">
+                    ⬇️ Download Result
+                </button>
+                <div class="generation-text" id="generation-text"></div>
+                <!-- Prompt Debug -->
+                <div class="prompt-debug" id="prompt-debug">
+                    <button class="prompt-toggle" id="prompt-toggle" onclick="togglePrompt()">
+                        🔍 View Generation Prompt
+                    </button>
+                    <pre class="prompt-content" id="prompt-content"></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Powered by <strong>Gemini 3 Flash</strong> (Vision) + <strong>Gemini 2.5 Flash</strong> (Generation)</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+
+</body>
+
+</html>
