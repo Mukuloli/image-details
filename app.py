@@ -17,7 +17,17 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# --- Safe Gemini client initialization ---
+_api_key = os.getenv("GEMINI_API_KEY")
+client = None
+if _api_key:
+    try:
+        client = genai.Client(api_key=_api_key)
+        print(f"[INIT] Gemini client initialized successfully.")
+    except Exception as e:
+        print(f"[INIT] WARNING: Failed to initialize Gemini client: {e}")
+else:
+    print("[INIT] WARNING: GEMINI_API_KEY not set. API routes will not work.")
 
 # ---------------------------------------------------------------------------
 # Agentic Vision Module — Extracts structured details from an image
@@ -515,6 +525,8 @@ def index():
 @app.route("/api/analyze", methods=["POST"])
 def api_analyze():
     """Analyze a source image and return structured clothing details."""
+    if client is None:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
     try:
         if "image" not in request.files:
             return jsonify({"error": "No image file provided"}), 400
@@ -556,6 +568,8 @@ def api_prompt_preview():
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
     """Generate clothing transfer image using Nano Banana (JSON details + target only)."""
+    if client is None:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
     try:
         if "target_image" not in request.files:
             return jsonify({"error": "No target image provided"}), 400
