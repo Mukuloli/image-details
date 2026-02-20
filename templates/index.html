@@ -102,6 +102,17 @@
                     <div class="upload-hint">This person will wear the analyzed clothing</div>
                     <input type="file" id="target-input" accept="image/*">
                 </div>
+                <div class="user-instructions-wrapper">
+                    <label class="user-instructions-label" for="user-instructions">
+                        <span class="label-icon">✍️</span> Your Instructions <span
+                            class="optional-tag">(Optional)</span>
+                    </label>
+                    <textarea id="user-instructions" class="user-instructions"
+                        placeholder="e.g., White studio background, soft natural lighting, person facing camera, professional look, high quality photograph..."
+                        rows="3"></textarea>
+                    <div class="instructions-hint">💡 Yahan likho jo photo mein chahiye — background, lighting, pose,
+                        quality etc.</div>
+                </div>
                 <button class="btn btn-generate" id="generate-btn" disabled>
                     <div class="spinner"></div>
                     <span class="btn-text">✨ Generate with Nano Banana</span>

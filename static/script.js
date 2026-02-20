@@ -192,9 +192,13 @@ generateBtn.addEventListener('click', async () => {
     promptDebug.classList.remove('visible');
     promptContent.classList.remove('visible');
 
+    const userInstructions = document.getElementById('user-instructions')?.value || '';
+
     const formData = new FormData();
     formData.append('target_image', targetImageFile);
+    formData.append('source_image', sourceImageFile);
     formData.append('details', JSON.stringify(extractedDetails));
+    formData.append('user_instructions', userInstructions);
 
     try {
         const resp = await fetch('/api/generate', {

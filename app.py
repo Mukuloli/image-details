@@ -38,6 +38,11 @@ jewelry, color science, and garment construction. Your output will be fed DIRECT
 AI image-generation model to PERFECTLY RECREATE this exact clothing, jewelry, and styling
 on a different person. Every missing or inaccurate detail = a visible flaw in the output image.
 
+## ━━━ YOUR #1 MISSION ━━━
+**DRESS and JEWELRY are your TOP PRIORITY.** The generation model needs to reproduce the
+exact same dress/outfit and exact same jewelry on another person. If you miss any dress detail
+or jewelry detail, the output will look WRONG. Focus 80% of your effort on DRESS + JEWELRY.
+
 ## ━━━ ABSOLUTE RULES (NEVER VIOLATE) ━━━
 1. **EXACT COLORS**: Every color MUST have BOTH a precise name AND HEX code.
    Example: "Deep burgundy wine (#722F37)". ALL colors — primary, secondary, accent,
@@ -56,133 +61,222 @@ on a different person. Every missing or inaccurate detail = a visible flaw in th
 - Garment type, overall silhouette, style era/category.
 - Person's pose and body angle (affects garment visibility).
 
-### STEP 2: COLOR DEEP-DIVE
-- Examine EACH garment region: body-front, body-back, sleeves (L/R), collar, cuffs, trim, lining.
-- For EACH region: base color (name + hex), color in light (hex), color in shadow (hex).
-- Gradients, ombré effects, fading, color transitions → start/end hex codes.
-- Color shifts from fabric texture (satin sheen vs matte base).
+### ★★★ STEP 2: DRESS DEEP ANALYSIS (MOST CRITICAL — SPEND MAXIMUM TIME HERE) ★★★
+**This step determines whether the generated image will look like the REAL dress or a FAKE one.**
 
-### STEP 3: FABRIC & TEXTURE
-- Fabric type with confidence % (cotton, silk, chiffon, denim, velvet, etc.).
-- Surface: matte/glossy/semi-sheer/rough/smooth/ribbed/brushed/napped.
-- Weave pattern if visible: plain, twill, satin, basket, herringbone, jacquard.
-- Thread visibility, thickness, surface irregularities (pilling, fuzz, slubs).
-- Fabric weight: lightweight/medium/heavy — how it drapes.
-- Transparency: opaque/semi-sheer/sheer.
+#### 2A: DRESS IDENTITY
+- Exact garment type and sub-type (e.g., "Anarkali kurta with floor-length flare", "A-line midi dress with wrap front")
+- Overall shape/silhouette from shoulder to hem — HOW does it flow on the body?
+- Style category: traditional/western/fusion/ethnic/formal/casual
+- What makes THIS dress visually DISTINCT from other similar dresses?
 
-### STEP 4: CONSTRUCTION & STRUCTURE (COUNT EVERYTHING)
-- ALL panels (count), seams (type + position), darts (count + position).
-- Pleats (type + count), tucks, gathers, ruching — each with position.
-- Pockets: count, type, position, size.
-- Vents/slits: count, position, length.
-- Collar/neckline: exact type, depth, width, stand height.
-- Sleeves: type, length, cuff style, cuff closure.
-- Hemline: style, depth of hem fold.
-- Closures: count, type, material, color+hex, position.
-- Buttons: EXACT count, diameter, shape, material, color+hex, holes, spacing.
+#### 2B: DRESS COLORS (REGION-BY-REGION)
+- Scan the dress in regions: neckline area, chest/bodice, waist, hip area, skirt/lower half, sleeves (L+R), back (if visible), hem
+- For EACH region: exact color name + HEX code
+- Color in LIGHT areas (HEX) vs color in SHADOW areas (HEX)
+- Any gradients, ombré, color transitions → start HEX → end HEX
+- Any color contrast between different parts of the dress
 
-### STEP 5: PATTERN & PRINT
-- Pattern type: solid/striped/plaid/floral/geometric/abstract/paisley/etc.
-- Motif shape, size, color palette (all hex), spacing, orientation, repeat count.
-- Pattern alignment at seams: matched/offset/random.
-- Print technique: screen-printed/digital/woven-in/embroidered/block-printed.
+#### 2C: DRESS FABRIC & TEXTURE
+- Fabric type with confidence % (silk, cotton, chiffon, georgette, velvet, net, brocade, satin, crepe, etc.)
+- Surface: matte/glossy/semi-sheer/rough/smooth/ribbed/textured
+- Fabric weight: lightweight/medium/heavy — how it drapes and falls
+- Transparency: opaque/semi-sheer/sheer — can you see skin through it?
+- Fabric sheen: does it reflect light? Where and how much?
+- Weave pattern if visible: plain, twill, satin, jacquard, brocade
 
-### ★ STEP 6: SPECIAL DESIGN FEATURES & MICRO-DETAILS (CRITICAL — DO NOT SKIP) ★
-**This is the MOST IMPORTANT step. Many models skip this. YOU MUST NOT.**
+#### 2D: DRESS CONSTRUCTION & STRUCTURE
+- **Neckline**: Exact type (V-neck, round, sweetheart, boat, square, mandarin, keyhole, etc.), depth measurement, width, any collar/stand
+- **Sleeves**: Type (full/3-quarter/half/cap/sleeveless/puff/bell/bishop), length, width at opening, cuff style, any detailing on sleeves
+- **Bodice**: Fitted/loose, any darts, boning, shirring, gathering, pleating at bodice
+- **Waistline**: Natural/empire/drop/no waistline, any belt/tie/cinch at waist
+- **Skirt/Lower half**: Flare type (A-line/circle/straight/mermaid/pleated/layered), fullness, number of layers
+- **Length**: Exact length relative to body (above knee/knee/below knee/midi/ankle/floor)
+- **Hemline**: Straight/curved/asymmetric/high-low, hem finishing
+- **Panels**: Count of fabric panels, their shapes and arrangement
+- **Seams**: All visible seams — type (French/flat-fell/princess/side), position
+- **Pleats**: Type (box/knife/accordion/inverted), count, position, width
+- **Closures**: Zip (position), hooks, ties, buttons — count, type, position
+- **Buttons**: EXACT count, diameter, shape, material, color+HEX, spacing between each
+- **Pockets**: Count, type (patch/welt/hidden), position, size
+- **Slits/Vents**: Count, position, length
+- **Lining**: Visible? Color+HEX, fabric type
 
-Mentally ZOOM IN to every 5cm × 5cm section of the garment and scan for:
-- **Piping/edging**: Any colored piping, contrast edging, bias tape along seams or edges
-- **Trim/borders**: Lace trim, ribbon borders, embroidered borders, printed borders at hem/cuffs/neckline
-- **Topstitching**: Decorative stitching lines, contrast thread stitching, double-needle stitching
-- **Gathering/shirring**: Where fabric is gathered, elastic shirring, smocking
-- **Cutwork/laser-cut**: Any cut-out patterns, perforations, laser-cut designs
-- **Appliqué/patchwork**: Fabric pieces stitched on, patches, quilted sections
-- **Prints within prints**: Small secondary prints/motifs inside larger patterns
-- **Beading/sequin work**: Even if just a few beads — count them, describe arrangement
-- **Embroidery details**: Thread colors (hex), stitch types (satin/chain/cross), motif shapes, coverage
-- **Logo/label/text**: Any visible branding, labels, text, monograms
-- **Belt loops/tabs**: Functional or decorative loops, tabs, straps
-- **Drawstrings/ties**: Cords, ribbons, bow ties, cinch details
-- **Ruffle/frill details**: Layers of ruffles, ruffle width, spacing, direction
-- **Wrap/drape details**: How fabric wraps, overlaps, crosses-over
-- **Asymmetric elements**: One side different from other — note exactly how
-- **Hidden details**: Parts partially visible — inner collar, peek of lining, inside of cuff
+#### 2E: DRESS PATTERN & PRINT
+- Pattern type: solid/striped/plaid/floral/geometric/abstract/paisley/block-print/bandhani/ikat/etc.
+- If patterned: motif SHAPE, exact SIZE, all COLORS (each with HEX), spacing between motifs, orientation, repeat pattern
+- Pattern alignment at seams: matched/offset/random
+- Print technique: screen-printed/digital/woven-in/embroidered/block-printed/hand-painted
+- Border prints: any different pattern/design at hemline, neckline, or sleeve edges
 
-### STEP 7: EMBELLISHMENTS
-- Count EVERY sequin, bead, rhinestone, pearl, embroidery motif, appliqué, lace panel,
-  ruffle, ribbon, bow, fringe, tassel.
-- For each: material, color+hex, size, position on garment.
-- Embroidery: thread colors (all hex), stitch types, motif description, coverage area.
+#### 2F: DRESS EMBELLISHMENTS & DECORATION
+- **Embroidery**: Thread colors (ALL HEX codes), stitch types (satin/chain/cross/zari/aari/resham), motif shapes, coverage area on dress, density
+- **Beadwork**: EXACT count of beads, bead material, color+HEX, size, arrangement pattern, where on dress
+- **Sequins**: EXACT count (or area covered), color+HEX, size, shape, arrangement
+- **Stone/crystal work**: Count, type (kundan/rhinestone/crystal), color+HEX, size, setting
+- **Mirror work (shisha)**: Count, size, shape, arrangement, border thread color+HEX
+- **Zari/metallic work**: Gold/silver, thread type, coverage area, motif patterns
+- **Lace**: Type (Chantilly/guipure/crochet), color+HEX, width, position on dress
+- **Appliqué/patchwork**: Fabric type, color+HEX, shape, position
+- **Ribbon/tape**: Width, color+HEX, position, how attached
+- **Tassels/pom-poms/fringe**: Count, size, color+HEX, position
+- **Ruffles/frills**: Layer count, width, position, fabric type
 
-### STEP 8: JEWELRY INVENTORY
-- Each piece: type, metal type + finish, metal color hex.
-- Stones: EXACT count, cut, color+hex, size, setting type, arrangement.
-- Chain: link shape, count, thickness.
-- Design elements: dots, engravings, filigree, beads, pendants.
+#### 2G: DRESS SPECIAL FEATURES (WHAT MAKES IT UNIQUE)
+- **Piping/edging**: Contrast piping, bias tape, satin edging — color+HEX, position
+- **Trim/borders**: Decorative borders at hem/cuffs/neckline — full description
+- **Topstitching**: Decorative stitching, contrast thread — color+HEX
+- **Cutwork/laser-cut**: Cut-out patterns, their shapes, positions
+- **Wrap/overlap**: How fabric wraps, direction, overlap amount
+- **Asymmetric elements**: Any left-right differences
+- **Tie/drawstring details**: Position, material, length, tassels at ends
+- **Dupatta/scarf attached**: Is there an attached drape? Detail it fully
+- **Hidden details**: Inner collar, peek of lining, underside details visible
 
-### STEP 9: ACCESSORIES
+### ★★★ STEP 3: JEWELRY DEEP ANALYSIS (SECOND MOST CRITICAL) ★★★
+**Every piece of jewelry must be described so precisely that the generation model can recreate it exactly.**
+
+For EACH piece of jewelry visible, provide:
+
+#### 3A: NECKLACE/CHAIN (if present)
+- Type: choker/princess/matinee/opera/pendant/statement/layered/mangalsutra/haar
+- Metal: gold/silver/rose gold/oxidized/kundan — exact finish (polished/matte/antique/brushed)
+- Metal color HEX code
+- Chain: link style (cable/box/rope/snake/curb), thickness, length
+- Pendant (if any): shape, size, design, material, color+HEX
+- Stones: EXACT count per section, stone type (diamond/ruby/emerald/pearl/kundan/polki/AD), cut (round/oval/marquise/pear/cabochon), EXACT color+HEX for each stone color, size, setting type (prong/bezel/pave/channel), arrangement pattern
+- Beads: count, material, color+HEX, size, spacing
+- Design elements: filigree, meenakari (enamel colors+HEX), engravings, motifs
+- Dangling elements: drops, jhumka, tassels — count, shape, material
+- Total dimensions: length, width at widest point
+
+#### 3B: EARRINGS (if present)
+- Type: stud/drop/chandelier/jhumka/bali/huggie/hoop/ear cuff
+- Metal type + finish + color HEX
+- Main body: shape, size, design
+- Stones: count, type, color+HEX, size, arrangement
+- Dangling elements: length, movement, what hangs (pearls/chains/beads)
+- Total drop length from earlobe
+
+#### 3C: BANGLES/BRACELETS (if present)
+- Count of bangles — EXACT number on each wrist
+- Type: bangle/kangan/cuff/bracelet/kada
+- Material: gold/glass/lac/metal — finish and color+HEX
+- Width of each bangle, thickness
+- Stones/embellishments on bangles: count, type, color+HEX
+- Pattern on bangles: plain/engraved/enameled/stone-studded
+- Arrangement: tight stack, loose, mixed colors
+
+#### 3D: RINGS (if present)
+- Count, which fingers
+- Metal type + color HEX
+- Stone: type, count, color+HEX, setting
+- Band style: thin/thick/twisted/engraved
+
+#### 3E: MAANG TIKKA / HEAD JEWELRY (if present)
+- Chain length, where it sits on hair parting
+- Central pendant: shape, size, stones, color+HEX
+- Side attachments: how it connects to hair/ears
+
+#### 3F: ANKLETS / WAIST CHAIN / OTHER JEWELRY
+- Full description with all details as above
+
+#### 3G: NOSE RING/PIN (if present)
+- Type: stud/ring/nath, size, which nostril
+- Metal + stone details with colors+HEX
+- Chain attached (if nath): length, attachment point
+
+### STEP 4: ACCESSORIES
 - Belt, scarf/dupatta, watch, bag, sunglasses, hair accessories, footwear.
 - All with full color+hex descriptions.
 
-### STEP 10: FIT & DRAPE
+### STEP 5: FIT & DRAPE
 - Fit: tight/fitted/relaxed/oversized/draped.
 - Where it clings vs where it falls loose.
 - Count major fold lines and their direction.
 - Garment length relative to body landmarks.
 
-### STEP 11: ENVIRONMENT & LIGHTING
+### STEP 6: ENVIRONMENT & LIGHTING
 - Light source direction, intensity, temperature (warm/cool/neutral).
 - Shadow patterns on garment. Background colors + hex.
 
-### STEP 12: FINAL CROSS-VERIFICATION
+### STEP 7: FINAL CROSS-VERIFICATION
 - Re-scan the ENTIRE image one final time.
-- Did you miss ANY small detail? Tiny print? Subtle stitch? Hidden element?
+- Did you miss ANY dress detail? Any embroidery motif? Any stitch?
+- Did you miss ANY jewelry piece? Any stone? Any bead? Any chain link detail?
 - Verify all counts. Confirm all hex codes.
+- Ask yourself: "Can someone recreate this EXACT dress and jewelry from my description alone?" If NO → add more details.
 
 ## ━━━ OUTPUT FORMAT ━━━
 
 Return a valid JSON object with these fields (null if not applicable):
 
 {
-  "dress_type": "Garment type with sub-category",
+  "dress_type": "EXACT garment type with full sub-category (e.g. 'Anarkali kurta with floor-length flare and attached dupatta')",
+  "dress_identity": "One paragraph describing the COMPLETE visual identity of the dress — what someone would see at first glance, what makes it recognizable, its overall vibe",
   "style_era": "Style period/aesthetic",
   "primary_color": "Exact shade name + hex code",
   "primary_color_hex": "#hex only",
-  "secondary_colors": [{"name": "Color", "hex": "#hex", "location": "Where"}],
-  "accent_colors": [{"name": "Color", "hex": "#hex", "location": "Where"}],
+  "secondary_colors": [{"name": "Color", "hex": "#hex", "location": "Where on dress"}],
+  "accent_colors": [{"name": "Color", "hex": "#hex", "location": "Where on dress"}],
   "color_in_shadows": "Primary color in shadow — name + hex",
   "color_in_highlights": "Primary color in highlights — name + hex",
-  "color_variations_by_region": "How color differs across regions — each with hex",
+  "color_variations_by_region": "How color differs across dress regions — each with hex",
   "fabric": "Fabric type + confidence %",
   "fabric_weight": "Weight + drape behavior",
+  "fabric_sheen": "How the fabric reflects light — where shiny, where matte",
   "texture": "Surface texture description",
   "texture_detail": "Micro-level texture: thread, weave, sheen, irregularities",
   "transparency": "Opaque / Semi-sheer / Sheer",
-  "pattern": "Pattern type",
-  "pattern_details": "Full description: motif, size, spacing, orientation, repeat count",
-  "pattern_colors": [{"name": "Color", "hex": "#hex", "role": "background/motif/outline"}],
-  "pattern_alignment": "How pattern aligns at seams",
+  "neckline": "EXACT type, depth, width, collar stand height, any neckline embellishment",
+  "sleeves": "Type, length, width, shape, cuff style, cuff closure, any sleeve embellishment",
+  "bodice": "Fitted/loose, darts, boning, gathering, any bodice-specific details",
+  "waistline": "Type, any belt/tie/cinch, how defined",
+  "skirt_lower": "Flare type, fullness, layers, how it falls",
+  "length": "Garment length relative to body",
+  "hemline": "Hem style + finish + any hem decoration",
+  "silhouette": "Overall garment shape from shoulder to hem",
   "fit": "Fit style + drape description",
   "fit_on_body": "Where clings, where loose, how falls",
-  "silhouette": "Overall garment shape from shoulder to hem",
-  "sleeves": "Type, length, width, cuff style, cuff closure details",
-  "neckline": "Type, depth, width, collar stand height",
-  "length": "Garment length relative to body",
-  "hemline": "Hem style + finish",
+  "pattern": "Pattern type",
+  "pattern_details": "Full description: motif SHAPE, SIZE, SPACING, ORIENTATION, repeat count, arrangement",
+  "pattern_colors": [{"name": "Color", "hex": "#hex", "role": "background/motif/outline/border"}],
+  "pattern_alignment": "How pattern aligns at seams",
+  "border_design": "Any decorative border at hem/neckline/sleeves — full description with colors+HEX",
   "buttons": "EXACT count, diameter, shape, material, color+hex, holes, spacing, positions",
   "buttonholes": "Count, style, thread color+hex",
-  "embellishments": "EXACT count + full description of every decorative element with positions",
-  "structural_details": "ALL panels, darts, pleats, tucks, gathers — with counts and positions",
-  "seams_and_stitching": "Seam types, topstitching, stitch width, thread color+hex",
   "closures": "Each closure: type, count, position, material, color+hex",
   "pockets": "Count, type, position, size",
   "vents_and_slits": "Count, position, length",
+  "structural_details": "ALL panels (count), darts (count+position), pleats (type+count+position), tucks, gathers — comprehensive",
+  "seams_and_stitching": "Seam types, topstitching, stitch width, thread color+hex",
   "lining_visible": "Lining color+hex + fabric if visible",
-  "special_design_features": "ALL unique design elements that make this garment SPECIAL — piping, trim, borders, contrast edging, decorative stitching, cutwork, wrap details, asymmetric elements, drawstrings, ties, belt loops, tabs. DESCRIBE EACH ONE with position, color+hex, size.",
-  "micro_details": "TINY details often missed — small prints within prints, subtle stitch patterns, barely visible embroidery, miniature buttons, hidden snaps, contrast thread at seams, edge finishing method, hem tape color, brand labels/tags visible, monograms, tiny beads or sequins",
-  "design_dna": "What makes THIS garment DIFFERENT from a plain/generic version of the same type? List every distinctive feature that sets it apart.",
-  "jewelry_pieces": [{"type": "type", "material": "metal + finish", "material_color_hex": "#hex", "stones": "count, cut, color+hex, size, setting, arrangement", "chain_details": "link shape, count, thickness", "design_elements": "dots, engravings, filigree, beads", "dimensions": "size", "position_on_body": "location", "description": "full description"}],
-  "accessories": "Every accessory with full details + colors+hex",
+  "embroidery": "COMPLETE embroidery description — thread colors (ALL HEX), stitch types, motif shapes, motif sizes, coverage area, density, placement on dress",
+  "beadwork": "Bead/sequin/stone work on dress — exact counts, materials, colors+HEX, sizes, arrangement, placement",
+  "embellishments": "ALL other decorative elements — lace, ribbon, appliqué, mirror work, zari, fringe, tassels — each with count, color+HEX, position, size",
+  "special_design_features": "ALL unique design elements — piping, trim, borders, contrast edging, cutwork, wrap details, asymmetric elements, drawstrings, ties, belt loops, tabs. EACH with position, color+hex, size",
+  "micro_details": "TINY details — small prints within prints, subtle stitches, barely visible embroidery, miniature buttons, hidden snaps, contrast thread, edge finishing, hem tape, brand labels, monograms, tiny beads",
+  "design_dna": "WHAT makes THIS dress DIFFERENT from a plain/generic version? List EVERY distinctive feature",
+  "dress_reproduction_checklist": "A numbered checklist of the TOP 10 most important visual features someone MUST get right to reproduce this exact dress",
+  "jewelry_pieces": [
+    {
+      "type": "Exact jewelry type (e.g. 'kundan choker necklace', 'gold jhumka earrings', 'glass bangles set')",
+      "material": "Metal/material type + finish (e.g. 'antique gold with polished finish')",
+      "material_color_hex": "#hex",
+      "stones": "EXACT count per stone type, cut shape, color+HEX for each, size in mm, setting type, arrangement pattern",
+      "pearls": "Count, size, color+HEX, real/faux, arrangement",
+      "enamel_meenakari": "Enamel work colors (each HEX), patterns, coverage",
+      "chain_details": "Link shape, count if countable, thickness, pattern",
+      "design_elements": "Filigree, engravings, motifs, dots, texturing — full description",
+      "dangling_elements": "What hangs: drops/jhumka/tassels/chains — count, length, material, color+HEX",
+      "dimensions": "Length, width, drop length",
+      "position_on_body": "Exact placement",
+      "visual_weight": "Light/medium/heavy/statement",
+      "description": "Complete one-paragraph description that could recreate this piece"
+    }
+  ],
+  "jewelry_reproduction_checklist": "A numbered checklist of the TOP 5 most important visual features someone MUST get right to reproduce the exact jewelry",
+  "accessories": "Every non-jewelry accessory with full details + colors+hex",
   "layering": "Layer count, each layer described with fabric + color",
   "proportions": "Key proportional relationships",
   "draping_and_folds": "COUNT of fold lines, direction, depth, where fabric bunches",
@@ -201,12 +295,14 @@ Return a valid JSON object with these fields (null if not applicable):
 - EVERY color mention MUST have a hex code — no exceptions.
 - Use code_execution tool for precise counting if needed.
 - Count one-by-one. Do not round. Exact numbers or "approximately N (estimated)".
-- FOR SPECIAL DETAILS: If the garment has ANY unique design features (piping, trim, borders,
-  embroidery, prints, cutwork, contrast stitching, asymmetry, etc.), the `special_design_features`
-  and `micro_details` fields MUST be filled with comprehensive descriptions. These fields are
-  what differentiate a GOOD analysis from a BAD one. DO NOT leave them null or empty.
+- The `dress_reproduction_checklist` and `jewelry_reproduction_checklist` fields are MANDATORY.
+  These are what the generation model will use as its primary reference.
+- `embroidery`, `beadwork`, `embellishments`, and `special_design_features` fields must be
+  COMPREHENSIVE. If the dress has any of these, describe them in extreme detail.
+- `jewelry_pieces` array must contain a SEPARATE entry for EACH visible jewelry piece.
+  Do NOT combine multiple pieces into one entry.
 - Your description must be so detailed that someone who has NEVER seen this image could
-  instruct an AI model to generate a pixel-perfect recreation.
+  instruct an AI model to generate a pixel-perfect recreation of the dress AND jewelry.
 """
 
 
@@ -228,20 +324,28 @@ analysis is shown below, but it has GAPS and MISSING DETAILS.
 ## YOUR TASK NOW:
 Look at the image AGAIN very carefully. Focus on what you MISSED in the first pass.
 
-1. **ZOOM INTO EVERY SECTION** of the garment — neckline area, chest, waist, hem, sleeves, back.
-2. **Find details that are null, empty, or weak** in your first pass.
-3. **Especially fill these critical fields if they are empty or vague:**
-   - `special_design_features` — piping, trim, borders, contrast edging, decorative stitching, cutwork, ties, wraps
-   - `micro_details` — tiny prints, subtle stitches, miniature elements, hidden snaps, contrast thread
-   - `design_dna` — what makes THIS garment unique vs a plain version
-   - `embellishments` — any decorative elements with exact counts
-   - `pattern_details` — motif shapes, sizes, spacing, colors
-   - `structural_details` — panels, darts, pleats with counts
-   - `buttons` — exact count, shape, material
-   - `closures` — every closure type
+1. **DRESS DETAILS — Did you capture EVERYTHING?**
+   - `dress_identity` — one paragraph that fully describes the dress's visual identity
+   - `neckline` — exact type, depth, any embellishment at neckline
+   - `sleeves` — type, length, cuff details, any sleeve decoration
+   - `bodice` — fitting, darts, gathering details
+   - `waistline` — how is the waist defined?
+   - `skirt_lower` — flare, layers, fullness
+   - `embroidery` — thread colors (HEX), stitch types, motif shapes, coverage area
+   - `beadwork` — exact counts, colors, arrangement
+   - `border_design` — any decorative borders at hem/neckline/sleeves
+   - `special_design_features` — piping, trim, cutwork, ties, wraps
+   - `design_dna` — what makes THIS dress unique
+   - `dress_reproduction_checklist` — top 10 features to reproduce this dress
 
-4. **Also verify and correct** any colors — are the HEX codes accurate?
-5. **Count again** — are button/stone/bead counts correct?
+2. **JEWELRY — Did you capture EVERY piece?**
+   - `jewelry_pieces` — is there a SEPARATE entry for EACH piece?
+   - Did you describe stones (exact count, color+HEX, setting)?
+   - Did you describe chain details, dangling elements, enamel work?
+   - `jewelry_reproduction_checklist` — top 5 features to reproduce the jewelry
+
+3. **COLORS** — Are all HEX codes accurate? Re-verify.
+4. **COUNTS** — Are button/stone/bead/bangle counts correct? Count again.
 
 ## OUTPUT:
 Return a JSON object with ONLY the fields you are updating or adding.
@@ -270,9 +374,13 @@ def analyze_image(image_bytes: bytes, mime_type: str) -> dict:
     # ─── Check if refinement is needed ───
     weak_fields = []
     critical_fields = [
+        "dress_identity", "dress_reproduction_checklist",
+        "embroidery", "beadwork", "embellishments",
         "special_design_features", "micro_details", "design_dna",
-        "embellishments", "pattern_details", "structural_details",
-        "buttons", "closures", "embellishments", "reproduction_notes",
+        "border_design", "neckline", "sleeves", "bodice",
+        "jewelry_pieces", "jewelry_reproduction_checklist",
+        "pattern_details", "structural_details",
+        "buttons", "closures", "reproduction_notes",
     ]
     for field in critical_fields:
         val = pass1_result.get(field)
@@ -324,43 +432,102 @@ def analyze_image(image_bytes: bytes, mime_type: str) -> dict:
 
 
 
-def build_generation_prompt(details: dict) -> str:
-    """Build a generation prompt that includes the FULL extracted JSON.
+def build_generation_prompt(details: dict, user_instructions: str = "") -> str:
+    """Build a generation prompt focused on DRESS and JEWELRY reproduction.
     
-    Instead of manually picking fields (which loses details), we dump the
-    entire JSON and add focused instructions. This ensures 100% of the
-    extracted details reach the generation model.
+    Extracts key dress and jewelry fields from the JSON and highlights them
+    separately, then includes the full JSON for completeness.
     """
-    # Quick headline for the model
     dress = details.get("dress_type") or "clothing"
     primary = details.get("primary_color") or "as described"
+    dress_identity = details.get("dress_identity") or ""
     
-    # Build the full JSON string (pretty-printed for readability)
+    # Extract dress-critical fields into a focused block
+    dress_fields = [
+        "neckline", "sleeves", "bodice", "waistline", "skirt_lower", "length",
+        "hemline", "silhouette", "fit", "fabric", "fabric_sheen", "pattern",
+        "pattern_details", "border_design", "embroidery", "beadwork",
+        "embellishments", "special_design_features", "design_dna",
+        "dress_reproduction_checklist"
+    ]
+    dress_block_lines = []
+    for field in dress_fields:
+        val = details.get(field)
+        if val and str(val).lower() not in ("null", "none", "n/a", ""):
+            label = field.replace("_", " ").title()
+            if isinstance(val, (list, dict)):
+                val = json.dumps(val, ensure_ascii=False)
+            dress_block_lines.append(f"• {label}: {val}")
+    dress_block = "\n".join(dress_block_lines) if dress_block_lines else "See full JSON below."
+    
+    # Extract jewelry into a focused block
+    jewelry_pieces = details.get("jewelry_pieces") or []
+    jewelry_checklist = details.get("jewelry_reproduction_checklist") or ""
+    jewelry_block = ""
+    if jewelry_pieces:
+        jewelry_lines = []
+        for i, piece in enumerate(jewelry_pieces, 1):
+            if isinstance(piece, dict):
+                desc = piece.get("description") or json.dumps(piece, ensure_ascii=False)
+                ptype = piece.get("type", "Jewelry piece")
+                jewelry_lines.append(f"  {i}. {ptype}: {desc}")
+            else:
+                jewelry_lines.append(f"  {i}. {piece}")
+        jewelry_block = "\n".join(jewelry_lines)
+        if jewelry_checklist:
+            jewelry_block += f"\n\n  REPRODUCTION CHECKLIST:\n  {jewelry_checklist}"
+    else:
+        jewelry_block = "No jewelry detected — do NOT add any jewelry."
+    
+    # Full JSON for completeness
     full_json = json.dumps(details, indent=2, ensure_ascii=False)
     
-    prompt = f"""DRESS THIS PERSON in the exact outfit described below.
+    # User instructions block
+    user_block = ""
+    if user_instructions and user_instructions.strip():
+        user_block = f"""\n
+═══ USER'S CUSTOM INSTRUCTIONS (HIGH PRIORITY — FOLLOW EXACTLY) ═══
+{user_instructions.strip()}
 
-═══ OUTFIT SUMMARY ═══
+The above instructions from the user MUST be followed. They take priority
+over default assumptions about background, lighting, pose adjustments, etc."""
+    
+    prompt = f"""COPY the EXACT outfit and jewelry from IMAGE 1 onto the person in IMAGE 2.
+Use IMAGE 1 as your PRIMARY VISUAL REFERENCE. The text below provides additional precision.
+
+═══ DRESS IDENTITY ═══
 Type: {dress}
 Primary Color: {primary}
+{('Description: ' + dress_identity) if dress_identity else ''}
 
-═══ COMPLETE CLOTHING DETAILS (FOLLOW EVERY DETAIL) ═══
+═══ ★ DRESS DETAILS — MATCH IMAGE 1 EXACTLY ★ ═══
+{dress_block}
+
+═══ ★ JEWELRY — MATCH IMAGE 1 EXACTLY ★ ═══
+{jewelry_block}
+
+═══ FULL CLOTHING+JEWELRY JSON (SUPPORTING REFERENCE) ═══
 {full_json}
 
 ═══ CRITICAL PRIORITIES ═══
-1. COLORS: Match EVERY color exactly using the HEX codes above. Primary, secondary, accent — all must be pixel-perfect.
-2. PATTERN & DESIGN: Reproduce the exact pattern, motifs, embroidery, embellishments as described.
-3. STRUCTURE: Match neckline, sleeves, length, silhouette, buttons, closures precisely.
-4. SPECIAL FEATURES: The "special_design_features", "micro_details", and "design_dna" fields describe what makes this outfit UNIQUE — reproduce them exactly.
-5. JEWELRY: Add all jewelry pieces exactly as described with correct colors and placement.
+1. IMAGE 1 IS THE TRUTH: The source image is your #1 reference. Copy it visually.
+2. DRESS: Match EXACT colors, pattern, embroidery, beadwork, embellishments, neckline,
+   sleeves, silhouette, and length AS SEEN IN IMAGE 1.
+3. JEWELRY: Reproduce every piece with correct metal color, stone colors,
+   stone count, chain style, and exact placement AS SEEN IN IMAGE 1.
+4. The "dress_reproduction_checklist" and "jewelry_reproduction_checklist" fields list
+   the MOST IMPORTANT features — verify these against IMAGE 1.
+5. Every detail must match what is VISIBLE in IMAGE 1.
+{user_block}
 
 ═══ ABSOLUTE RULES ═══
 • Keep the person's FACE, SKIN, HAIR, BODY, and POSE 100% UNCHANGED.
-• Keep the BACKGROUND and LIGHTING exactly the same.
-• ONLY change their clothing to match the description above.
-• The clothing must look naturally worn — proper fit, draping, and realistic shadows.
+• Keep the BACKGROUND and LIGHTING exactly the same (unless user instructions say otherwise).
+• ONLY change their clothing and jewelry to match IMAGE 1.
+• The dress must look naturally worn — proper fit, draping, and realistic shadows.
+• Jewelry must look realistic — proper reflections, weight, placement.
 • The result MUST be photorealistic — like a real high-quality photograph.
-• Do NOT simplify or skip any detail from the JSON above."""
+• Do NOT simplify the dress or skip any embellishment detail visible in IMAGE 1."""
 
     return prompt
 
@@ -370,20 +537,27 @@ Primary Color: {primary}
 # ---------------------------------------------------------------------------
 
 GENERATION_SYSTEM_INSTRUCTION = (
-    "You are an expert virtual try-on / clothing generation AI. "
-    "You receive ONE image of a TARGET person and a DETAILED TEXT DESCRIPTION "
-    "of the outfit they must wear. "
-    "\n\nCRITICAL RULES: "
-    "• The TARGET person's FACE, SKIN COLOR, HAIR, BODY SHAPE, and POSE must remain "
-    "  100% IDENTICAL — do NOT alter their identity or appearance in ANY way. "
-    "• The TARGET image's BACKGROUND and LIGHTING must stay EXACTLY the same. "
-    "• ONLY replace the TARGET person's clothing with the outfit described in the text. "
-    "• Follow the text description PRECISELY — match every color (use the HEX codes given), "
-    "  pattern, fabric texture, structural detail, and embellishment exactly as described. "
-    "• Add any jewelry or accessories described in the text. "
-    "• The clothing must look naturally worn — proper fit, draping, and shadows "
-    "  matching the TARGET person's body shape and pose. "
-    "• The final image must be photorealistic — it should look like a real photograph."
+    "You are an expert virtual try-on / clothing swap AI. "
+    "\n\nYOU WILL RECEIVE: "
+    "1) A photo of a PERSON (the target) "
+    "2) A photo showing a CLOTHING OUTFIT (the reference) "
+    "3) A detailed text description of the outfit "
+    "\n\nYOUR TASK: "
+    "Edit the PERSON's photo so they are wearing the OUTFIT from the reference photo. "
+    "\n\n⚠️ CRITICAL — DO NOT MERGE IMAGES: "
+    "• Your output must show EXACTLY ONE PERSON — the person from the target photo. "
+    "• Do NOT overlay, blend, combine, or stack the two images together. "
+    "• Do NOT show the reference person's face or body in the output. "
+    "• IGNORE the person in the reference photo — only look at their CLOTHING and JEWELRY. "
+    "\n\nWHAT TO KEEP FROM THE TARGET PHOTO (do NOT change these): "
+    "• Face, skin color, hair, body shape, pose — 100% identical "
+    "• Background, lighting, camera angle — exactly the same "
+    "\n\nWHAT TO CHANGE (copy from the reference photo): "
+    "• Clothing — exact same dress/outfit with all details: colors, pattern, embroidery, "
+    "  beadwork, embellishments, neckline, sleeves, silhouette, length "
+    "• Jewelry — every piece with correct metal color, stones, count, placement "
+    "\n\nThe output must be photorealistic — the clothing should look naturally worn "
+    "with proper fit, draping, and shadows matching the person's body."
 )
 
 
@@ -397,8 +571,8 @@ GENERATION_MODELS = [
     "gemini-2.5-flash-image",
 ]
 
-def _call_generation_model(target_part, prompt: str):
-    """Call the generation model with auto-retry and fallback on 503."""
+def _call_generation_model(source_part, target_part, prompt: str):
+    """Call the generation model with target + source reference images."""
     for model_name in GENERATION_MODELS:
         for attempt in range(3):
             try:
@@ -408,9 +582,17 @@ def _call_generation_model(target_part, prompt: str):
                     contents=[
                         target_part,
                         (
-                            "This is the TARGET PERSON. Keep their FACE, SKIN, HAIR, BODY, "
-                            "and POSE 100% UNCHANGED. Keep the BACKGROUND exactly the same. "
-                            "ONLY replace their clothing with the outfit described below.\n\n"
+                            "👆 THIS IS THE PERSON. This is who you are editing. "
+                            "Keep their face, skin, hair, body, pose, and background EXACTLY as they are. "
+                            "You will ONLY change their clothing and jewelry."
+                        ),
+                        source_part,
+                        (
+                            "👆 THIS IS THE CLOTHING REFERENCE. "
+                            "IGNORE the person in this photo — only look at the DRESS and JEWELRY. "
+                            "Copy this EXACT outfit onto the person from the first photo.\n\n"
+                            "⚠️ IMPORTANT: Output must show ONLY ONE PERSON (from the first photo). "
+                            "Do NOT merge, blend, or overlay the two photos together.\n\n"
                             + prompt
                         ),
                     ],
@@ -459,19 +641,20 @@ def _extract_response_parts(response) -> tuple[str | None, bytes | None]:
     return text_result, image_result
 
 
-def generate_image(target_image_bytes: bytes, target_mime: str,
-                   details: dict) -> tuple[str | None, bytes | None]:
+def generate_image(source_image_bytes: bytes, source_mime: str,
+                   target_image_bytes: bytes, target_mime: str,
+                   details: dict, user_instructions: str = "") -> tuple[str | None, bytes | None]:
     """
-    Virtual try-on: dress the target person using JSON details (no source image).
+    Virtual try-on: dress the target person using SOURCE image + JSON details.
     
     Strategy:
       1. Build a detailed prompt from extracted clothing details (JSON)
-      2. Send ONLY target image + text prompt to the generation model
+      2. Send SOURCE image (dress reference) + TARGET image + text prompt
       3. If no image returned, retry once with a simplified prompt
     
     Returns (text_response, image_bytes) tuple.
     """
-    prompt = build_generation_prompt(details)
+    prompt = build_generation_prompt(details, user_instructions)
 
     # Log the prompt for debugging
     print("=" * 60)
@@ -480,11 +663,12 @@ def generate_image(target_image_bytes: bytes, target_mime: str,
     print(prompt[:500] + "..." if len(prompt) > 500 else prompt)
     print("=" * 60)
 
+    source_part = types.Part.from_bytes(data=source_image_bytes, mime_type=source_mime)
     target_part = types.Part.from_bytes(data=target_image_bytes, mime_type=target_mime)
 
-    # Attempt 1: Full prompt
+    # Attempt 1: Full prompt with both images
     try:
-        response = _call_generation_model(target_part, prompt)
+        response = _call_generation_model(source_part, target_part, prompt)
         text_result, image_result = _extract_response_parts(response)
     except Exception as e:
         print(f"[ERROR] Generation attempt 1 failed: {e}")
@@ -495,16 +679,14 @@ def generate_image(target_image_bytes: bytes, target_mime: str,
     if image_result is None:
         print("[RETRY] No image in first attempt. Retrying with simplified prompt...")
         simple_prompt = (
-            f"Dress this person in the following outfit. "
+            f"Copy the EXACT outfit and jewelry from IMAGE 1 onto the person in IMAGE 2. "
             f"The outfit is: {details.get('dress_type', 'clothing')}. "
             f"Primary color: {details.get('primary_color', 'not specified')}. "
-            f"Fabric: {details.get('fabric', 'not specified')}. "
-            f"Pattern: {details.get('pattern', 'solid')}. "
             f"Keep the person's face, body, hair, skin, and background EXACTLY the same. "
-            f"Only change their clothes."
+            f"Only change their clothes and jewelry to match IMAGE 1."
         )
         try:
-            response = _call_generation_model(target_part, simple_prompt)
+            response = _call_generation_model(source_part, target_part, simple_prompt)
             text_result, image_result = _extract_response_parts(response)
         except Exception as e:
             print(f"[ERROR] Generation attempt 2 failed: {e}")
@@ -567,29 +749,37 @@ def api_prompt_preview():
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    """Generate clothing transfer image using Nano Banana (JSON details + target only)."""
+    """Generate clothing transfer: source dress image + target person."""
     if client is None:
         return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
     try:
         if "target_image" not in request.files:
             return jsonify({"error": "No target image provided"}), 400
+        if "source_image" not in request.files:
+            return jsonify({"error": "No source image provided"}), 400
 
         details_str = request.form.get("details")
         if not details_str:
             return jsonify({"error": "No details JSON provided"}), 400
 
         details = json.loads(details_str)
+        user_instructions = request.form.get("user_instructions", "")
+
+        source_file = request.files["source_image"]
+        source_bytes = source_file.read()
+        source_mime = source_file.content_type or "image/jpeg"
 
         target_file = request.files["target_image"]
         target_bytes = target_file.read()
         target_mime = target_file.content_type or "image/jpeg"
 
         # Build prompt for response (so UI can show it)
-        prompt_text = build_generation_prompt(details)
+        prompt_text = build_generation_prompt(details, user_instructions)
 
         text_resp, image_bytes = generate_image(
+            source_bytes, source_mime,
             target_bytes, target_mime,
-            details,
+            details, user_instructions,
         )
 
         if image_bytes is None:
