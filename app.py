@@ -436,7 +436,8 @@ def build_generation_prompt(details: dict, user_instructions: str = "") -> str:
     """Build a generation prompt focused on DRESS and JEWELRY reproduction.
     
     Extracts key dress and jewelry fields from the JSON and highlights them
-    separately, then includes the full JSON for completeness.
+    separately. Uses reproduction checklists instead of full JSON dump
+    to keep the model focused on visual reference.
     """
     dress = details.get("dress_type") or "clothing"
     primary = details.get("primary_color") or "as described"
@@ -458,7 +459,7 @@ def build_generation_prompt(details: dict, user_instructions: str = "") -> str:
             if isinstance(val, (list, dict)):
                 val = json.dumps(val, ensure_ascii=False)
             dress_block_lines.append(f"• {label}: {val}")
-    dress_block = "\n".join(dress_block_lines) if dress_block_lines else "See full JSON below."
+    dress_block = "\n".join(dress_block_lines) if dress_block_lines else "Refer to IMAGE 1 for all dress details."
     
     # Extract jewelry into a focused block
     jewelry_pieces = details.get("jewelry_pieces") or []
@@ -479,8 +480,14 @@ def build_generation_prompt(details: dict, user_instructions: str = "") -> str:
     else:
         jewelry_block = "No jewelry detected — do NOT add any jewelry."
     
-    # Full JSON for completeness
-    full_json = json.dumps(details, indent=2, ensure_ascii=False)
+    # Reproduction checklists (concise reference instead of full JSON)
+    checklist_block = ""
+    dress_checklist = details.get("dress_reproduction_checklist", "")
+    if dress_checklist:
+        checklist_block += f"\nDRESS CHECKLIST (must-match features):\n{dress_checklist}\n"
+    jewelry_checklist_detail = details.get("jewelry_reproduction_checklist", "")
+    if jewelry_checklist_detail:
+        checklist_block += f"\nJEWELRY CHECKLIST (must-match features):\n{jewelry_checklist_detail}\n"
     
     # User instructions block
     user_block = ""
@@ -506,8 +513,8 @@ Primary Color: {primary}
 ═══ ★ JEWELRY — MATCH IMAGE 1 EXACTLY ★ ═══
 {jewelry_block}
 
-═══ FULL CLOTHING+JEWELRY JSON (SUPPORTING REFERENCE) ═══
-{full_json}
+═══ REPRODUCTION CHECKLISTS ═══
+{checklist_block if checklist_block else 'Refer to IMAGE 1 for all details.'}
 
 ═══ CRITICAL PRIORITIES ═══
 1. IMAGE 1 IS THE TRUTH: The source image is your #1 reference. Copy it visually.
@@ -515,13 +522,13 @@ Primary Color: {primary}
    sleeves, silhouette, and length AS SEEN IN IMAGE 1.
 3. JEWELRY: Reproduce every piece with correct metal color, stone colors,
    stone count, chain style, and exact placement AS SEEN IN IMAGE 1.
-4. The "dress_reproduction_checklist" and "jewelry_reproduction_checklist" fields list
-   the MOST IMPORTANT features — verify these against IMAGE 1.
-5. Every detail must match what is VISIBLE in IMAGE 1.
+4. Every detail must match what is VISIBLE in IMAGE 1.
 {user_block}
 
 ═══ ABSOLUTE RULES ═══
-• Keep the person's FACE, SKIN, HAIR, BODY, and POSE 100% UNCHANGED.
+🚨 #1 RULE: The output image MUST show the FACE from IMAGE 2 — NEVER from IMAGE 1.
+• Keep the person's FACE, SKIN, HAIR, BODY, and POSE from IMAGE 2 — 100% UNCHANGED.
+• IGNORE the person in IMAGE 1 — only use their CLOTHES and JEWELRY.
 • Keep the BACKGROUND and LIGHTING exactly the same (unless user instructions say otherwise).
 • ONLY change their clothing and jewelry to match IMAGE 1.
 • The dress must look naturally worn — proper fit, draping, and realistic shadows.
@@ -537,27 +544,36 @@ Primary Color: {primary}
 # ---------------------------------------------------------------------------
 
 GENERATION_SYSTEM_INSTRUCTION = (
-    "You are an expert virtual try-on / clothing swap AI. "
-    "\n\nYOU WILL RECEIVE: "
-    "1) A photo of a PERSON (the target) "
-    "2) A photo showing a CLOTHING OUTFIT (the reference) "
-    "3) A detailed text description of the outfit "
-    "\n\nYOUR TASK: "
-    "Edit the PERSON's photo so they are wearing the OUTFIT from the reference photo. "
-    "\n\n⚠️ CRITICAL — DO NOT MERGE IMAGES: "
-    "• Your output must show EXACTLY ONE PERSON — the person from the target photo. "
-    "• Do NOT overlay, blend, combine, or stack the two images together. "
-    "• Do NOT show the reference person's face or body in the output. "
-    "• IGNORE the person in the reference photo — only look at their CLOTHING and JEWELRY. "
-    "\n\nWHAT TO KEEP FROM THE TARGET PHOTO (do NOT change these): "
-    "• Face, skin color, hair, body shape, pose — 100% identical "
-    "• Background, lighting, camera angle — exactly the same "
-    "\n\nWHAT TO CHANGE (copy from the reference photo): "
-    "• Clothing — exact same dress/outfit with all details: colors, pattern, embroidery, "
-    "  beadwork, embellishments, neckline, sleeves, silhouette, length "
-    "• Jewelry — every piece with correct metal color, stones, count, placement "
-    "\n\nThe output must be photorealistic — the clothing should look naturally worn "
-    "with proper fit, draping, and shadows matching the person's body."
+    "You are a PIXEL-PERFECT virtual try-on AI. Your #1 skill is VISUAL COPYING. "
+    "You copy clothing and jewelry from one photo onto a person in another photo "
+    "with 100% fidelity to the original."
+    "\n\n🚨 FACE RULE (HIGHEST PRIORITY — NEVER VIOLATE): "
+    "• The output image MUST show the FACE of the TARGET PERSON (IMAGE 2) — NOT the face from the source/reference photo (IMAGE 1). "
+    "• COMPLETELY IGNORE the person's face, body, skin tone, and hair in the reference photo. "
+    "• Only extract CLOTHING and JEWELRY from the reference photo — NOTHING ELSE. "
+    "• If you merge faces or copy the source person's face, the result is WRONG. "
+    "\n\nYOUR APPROACH — VISUAL COPYING (not interpretation): "
+    "• Treat the reference outfit photo as a TEMPLATE for clothes ONLY. "
+    "• ZOOM INTO every region of the outfit: neckline, bodice, sleeves, waist, skirt, hem, borders. "
+    "• For EACH region, copy the EXACT colors, patterns, embroidery density, and texture. "
+    "• Do NOT interpret or simplify — if the source has dense gold embroidery, your output must too. "
+    "• Do NOT add anything not in the source. Do NOT remove anything that IS in the source. "
+    "\n\n⚠️ CRITICAL — OUTPUT RULES: "
+    "• Output shows EXACTLY ONE PERSON — the person from IMAGE 2 (target photo). "
+    "• The person's FACE in output = FACE from IMAGE 2. NEVER from IMAGE 1. "
+    "• Do NOT merge, blend, or overlay the two photos. "
+    "\n\nWHAT TO KEEP UNCHANGED (100% from IMAGE 2 / target photo): "
+    "• Face, facial features, skin color, hair, body shape, pose — 100% identical to IMAGE 2 "
+    "• Background, lighting, camera angle — exactly the same as IMAGE 2 "
+    "\n\nWHAT TO COPY PIXEL-PERFECTLY (from IMAGE 1 / reference photo — CLOTHES ONLY): "
+    "• Dress/outfit: exact colors (not similar — EXACT), exact pattern, exact embroidery "
+    "  density and motifs, exact beadwork, exact neckline shape, exact sleeve style, "
+    "  exact silhouette, exact length, exact border designs, exact fabric texture "
+    "• Jewelry: every single piece — exact metal color, exact stone count and colors, "
+    "  exact chain style, exact placement on body "
+    "• Embellishment density: if the source has HEAVY embroidery covering 80% of the fabric, "
+    "  your output must also have HEAVY embroidery covering 80% of the fabric "
+    "\n\nThe output must be photorealistic with natural fit, draping, and shadows."
 )
 
 
@@ -580,25 +596,33 @@ def _call_generation_model(source_part, target_part, prompt: str):
                 resp = client.models.generate_content(
                     model=model_name,
                     contents=[
-                        target_part,
-                        (
-                            "👆 THIS IS THE PERSON. This is who you are editing. "
-                            "Keep their face, skin, hair, body, pose, and background EXACTLY as they are. "
-                            "You will ONLY change their clothing and jewelry."
-                        ),
                         source_part,
                         (
-                            "👆 THIS IS THE CLOTHING REFERENCE. "
-                            "IGNORE the person in this photo — only look at the DRESS and JEWELRY. "
-                            "Copy this EXACT outfit onto the person from the first photo.\n\n"
-                            "⚠️ IMPORTANT: Output must show ONLY ONE PERSON (from the first photo). "
-                            "Do NOT merge, blend, or overlay the two photos together.\n\n"
+                            "👆 IMAGE 1 — THE SOURCE OUTFIT (TRUTH). "
+                            "ONLY extract CLOTHING and JEWELRY from this image. "
+                            "IGNORE the person's face, body, and skin — you do NOT need them. "
+                            "Study the outfit VERY carefully. ZOOM INTO every region: "
+                            "neckline, bodice embroidery, sleeve details, waist area, skirt patterns, "
+                            "hemline border, all jewelry pieces. "
+                            "Copy EVERY clothing detail — exact colors, exact embroidery "
+                            "density, exact patterns, exact jewelry. Do NOT simplify anything."
+                        ),
+                        target_part,
+                        (
+                            "👆 IMAGE 2 — THE PERSON (keep THIS face in the output). "
+                            "Put the EXACT outfit from IMAGE 1 onto this person. "
+                            "🚨 The output MUST show THIS person's face — NOT the face from IMAGE 1. "
+                            "Keep their face, skin, hair, body, pose, and background 100% UNCHANGED. "
+                            "ONLY replace their clothing and jewelry with what you see in IMAGE 1.\n\n"
+                            "⚠️ Output = THIS person's face + IMAGE 1's clothing. "
+                            "If you show the face from IMAGE 1, the result is WRONG.\n\n"
                             + prompt
                         ),
                     ],
                     config=types.GenerateContentConfig(
                         response_modalities=["Text", "Image"],
                         system_instruction=GENERATION_SYSTEM_INSTRUCTION,
+                        temperature=0.4,
                     ),
                 )
                 print(f"[GEN] Success with {model_name}!")
@@ -641,41 +665,239 @@ def _extract_response_parts(response) -> tuple[str | None, bytes | None]:
     return text_result, image_result
 
 
+# ---------------------------------------------------------------------------
+# Agentic Verification Module — Compares source vs generated for accuracy
+# ---------------------------------------------------------------------------
+
+VERIFICATION_PROMPT = """You are an ELITE clothing comparison expert. You must compare TWO images
+and identify EVERY difference in the CLOTHING and JEWELRY ONLY.
+
+IMAGE 1 = SOURCE (the ORIGINAL outfit — this is the TRUTH)
+IMAGE 2 = GENERATED (AI-created version — this needs to match IMAGE 1 perfectly)
+
+## YOUR TASK
+Compare the DRESS and JEWELRY between both images with PIXEL-LEVEL precision.
+Identify EVERY difference, no matter how small.
+
+## WHAT TO COMPARE (focus ONLY on clothing + jewelry):
+1. **Colors** — Are all colors exactly the same? Check primary, secondary, accent colors.
+   Provide HEX codes for any color mismatches.
+2. **Embroidery/Beadwork** — Is every embroidery motif, bead, sequin, stone present?
+   Count elements in both images.
+3. **Pattern/Print** — Is the pattern identical? Check motif size, spacing, colors, orientation.
+4. **Neckline** — Same shape, depth, width, embellishment?
+5. **Sleeves** — Same type, length, width, cuff, detailing?
+6. **Silhouette/Fit** — Same overall shape, draping, length?
+7. **Hemline** — Same style, decoration?
+8. **Fabric appearance** — Same sheen, texture, drape, transparency?
+9. **Borders/Trim** — Same decorative borders at edges?
+10. **Jewelry** — Every piece present? Same metal, stones, design, placement?
+11. **Special features** — Piping, lace, buttons, closures, tie-ups — all matching?
+
+## WHAT TO IGNORE (do NOT compare these):
+- Person's face, skin, hair, body
+- Background, lighting, camera angle
+- Pose differences (different person wearing same clothing)
+
+## OUTPUT FORMAT — Return ONLY valid JSON:
+{
+  "match_score": 85,
+  "overall_assessment": "Brief 1-line summary",
+  "differences": [
+    {
+      "feature": "embroidery on bodice",
+      "severity": "CRITICAL",
+      "source_detail": "Gold zari thread embroidery with paisley motifs covering entire bodice",
+      "generated_detail": "Simple golden lines without paisley motifs",
+      "fix_instruction": "Add detailed gold zari paisley embroidery covering the entire bodice area"
+    }
+  ]
+}
+
+Rules:
+- match_score: 0-100 (100 = perfect match)
+- severity: "CRITICAL" (major visual difference) or "MINOR" (subtle)
+- fix_instruction: SPECIFIC actionable instruction to fix this difference
+- If EVERYTHING matches perfectly → {"match_score": 100, "overall_assessment": "Perfect match", "differences": []}
+- Return ONLY JSON. No markdown. No extra text.
+"""
+
+
+def verify_output(source_bytes: bytes, source_mime: str,
+                  generated_bytes: bytes) -> dict:
+    """Compare source dress image vs generated output to find differences."""
+    print("[VERIFY] Comparing source vs generated image...")
+    
+    source_part = types.Part.from_bytes(data=source_bytes, mime_type=source_mime)
+    gen_part = types.Part.from_bytes(data=generated_bytes, mime_type="image/png")
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[
+                source_part,
+                "👆 IMAGE 1 — SOURCE (the ORIGINAL outfit). This is the TRUTH.",
+                gen_part,
+                "👆 IMAGE 2 — GENERATED (AI output). Compare clothing/jewelry with IMAGE 1.",
+                VERIFICATION_PROMPT,
+            ],
+            config=types.GenerateContentConfig(
+                temperature=0.1,  # Low temperature for precise comparison
+            ),
+        )
+        
+        result = _parse_json_response(response.text)
+        score = result.get("match_score", 0)
+        diffs = result.get("differences", [])
+        print(f"[VERIFY] Match score: {score}/100, Differences found: {len(diffs)}")
+        for d in diffs:
+            print(f"  [{d.get('severity', '?')}] {d.get('feature', '?')}: {d.get('fix_instruction', '')[:80]}")
+        return result
+        
+    except Exception as e:
+        print(f"[VERIFY] Verification failed: {e}")
+        traceback.print_exc()
+        return {"match_score": -1, "differences": [], "overall_assessment": f"Verification failed: {e}"}
+
+
+def _build_refinement_prompt(details: dict, differences: list, user_instructions: str = "") -> str:
+    """Build a focused correction prompt from verification differences."""
+    
+    # Format differences into actionable fixes
+    fix_lines = []
+    for i, diff in enumerate(differences, 1):
+        severity = diff.get("severity", "CRITICAL")
+        feature = diff.get("feature", "unknown")
+        fix = diff.get("fix_instruction", "Match the source image")
+        fix_lines.append(f"  {i}. [{severity}] {feature}: {fix}")
+    
+    fixes_block = "\n".join(fix_lines) if fix_lines else "No specific fixes — match source image more closely."
+    
+    dress_type = details.get("dress_type", "clothing")
+    primary_color = details.get("primary_color", "as described")
+    checklist = details.get("dress_reproduction_checklist", "")
+    
+    user_block = ""
+    if user_instructions and user_instructions.strip():
+        user_block = f"\n\nUSER INSTRUCTIONS (also follow these):\n{user_instructions.strip()}"
+    
+    prompt = f"""REFINEMENT — Your previous attempt (IMAGE 3) had issues. Fix them.
+
+Look at the SOURCE OUTFIT (IMAGE 1) very carefully. Now compare it to your
+PREVIOUS ATTEMPT (IMAGE 3). Fix THESE specific differences:
+
+═══ ISSUES FOUND — FIX EACH ONE ═══
+{fixes_block}
+
+═══ OUTFIT REFERENCE ═══
+Type: {dress_type}
+Primary Color: {primary_color}
+{('Key Features: ' + str(checklist)) if checklist else ''}
+
+═══ HOW TO FIX ═══
+1. ZOOM INTO each problem area in the SOURCE image (IMAGE 1)
+2. Compare that exact area in your PREVIOUS ATTEMPT (IMAGE 3)
+3. Edit your previous attempt to match the source — region by region
+4. EMBROIDERY: If the source shows dense, heavy embroidery — match that EXACT density.
+   Do NOT simplify to light/sparse embroidery.
+5. JEWELRY: If the source shows specific jewelry — replicate EACH piece exactly.
+   Match the metal color, stone count, chain style, and size.
+6. COLORS: Match the EXACT shade from the source. Not similar — IDENTICAL.
+7. Keep the PERSON (IMAGE 2) unchanged — face, skin, hair, body, pose, background.
+8. Output must be photorealistic with natural fit and proper shadows.{user_block}"""
+    
+    return prompt
+
+
+def _call_refinement_model(source_part, target_part, prev_gen_part, prompt: str):
+    """Call generation model for refinement, passing the previous generated image
+    so the model can make targeted edits instead of generating from scratch."""
+    for attempt in range(3):
+        try:
+            print(f"[REFINE] Attempt {attempt+1}/3...")
+            resp = client.models.generate_content(
+                model="gemini-2.5-flash-image",
+                contents=[
+                    source_part,
+                    (
+                        "👆 IMAGE 1 — SOURCE OUTFIT (THE TRUTH). "
+                        "ONLY extract CLOTHING and JEWELRY from this image. "
+                        "IGNORE the person's face/body here. "
+                        "ZOOM INTO every region: neckline, bodice, sleeves, waist, skirt, "
+                        "hemline border, jewelry. Every clothing detail here must appear in your output."
+                    ),
+                    target_part,
+                    (
+                        "👆 IMAGE 2 — THE PERSON (keep THIS face). "
+                        "🚨 The output MUST show THIS person's face — NOT the face from IMAGE 1. "
+                        "Keep their face, skin, hair, body, pose, and background 100% UNCHANGED."
+                    ),
+                    prev_gen_part,
+                    (
+                        "👆 IMAGE 3 — YOUR PREVIOUS ATTEMPT. It has specific issues. "
+                        "Compare it region-by-region with IMAGE 1 (source outfit) and fix "
+                        "the clothing/jewelry differences listed below. EDIT this image — do NOT start from scratch. "
+                        "🚨 Keep the FACE from IMAGE 2 — do NOT change it.\n\n"
+                        + prompt
+                    ),
+                ],
+                config=types.GenerateContentConfig(
+                    response_modalities=["Text", "Image"],
+                    system_instruction=GENERATION_SYSTEM_INSTRUCTION,
+                    temperature=0.4,
+                ),
+            )
+            return resp
+        except Exception as e:
+            err_str = str(e)
+            if "503" in err_str or "UNAVAILABLE" in err_str:
+                wait = 10 * (attempt + 1)
+                print(f"[REFINE] 503 — waiting {wait}s...")
+                _time.sleep(wait)
+            else:
+                print(f"[REFINE] Error: {e}")
+                raise
+    raise Exception("Refinement model failed after 3 attempts.")
+
+
 def generate_image(source_image_bytes: bytes, source_mime: str,
                    target_image_bytes: bytes, target_mime: str,
-                   details: dict, user_instructions: str = "") -> tuple[str | None, bytes | None]:
+                   details: dict, user_instructions: str = "") -> dict:
     """
-    Virtual try-on: dress the target person using SOURCE image + JSON details.
+    Agentic Virtual Try-On with self-verification loop.
     
-    Strategy:
-      1. Build a detailed prompt from extracted clothing details (JSON)
-      2. Send SOURCE image (dress reference) + TARGET image + text prompt
-      3. If no image returned, retry once with a simplified prompt
+    Pipeline:
+      1. Generate initial clothing transfer
+      2. Verify: Compare source vs generated using vision model
+      3. If match_score < 90: Refine with focused correction prompt (max 2 rounds)
     
-    Returns (text_response, image_bytes) tuple.
+    Returns dict with: image_bytes, text, verification_score, corrections_applied
     """
     prompt = build_generation_prompt(details, user_instructions)
 
-    # Log the prompt for debugging
+    # Log prompt (truncated)
     print("=" * 60)
-    print("GENERATION PROMPT SENT TO MODEL:")
+    print("GENERATION PROMPT (truncated):")
     print("=" * 60)
-    print(prompt[:500] + "..." if len(prompt) > 500 else prompt)
+    print(prompt[:400] + "..." if len(prompt) > 400 else prompt)
     print("=" * 60)
 
     source_part = types.Part.from_bytes(data=source_image_bytes, mime_type=source_mime)
     target_part = types.Part.from_bytes(data=target_image_bytes, mime_type=target_mime)
 
-    # Attempt 1: Full prompt with both images
+    # ─── Stage 1: Initial Generation ───
+    print("[PIPELINE] Stage 1: Initial Generation...")
+    image_result = None
+    text_result = None
+    
     try:
         response = _call_generation_model(source_part, target_part, prompt)
         text_result, image_result = _extract_response_parts(response)
     except Exception as e:
         print(f"[ERROR] Generation attempt 1 failed: {e}")
         traceback.print_exc()
-        text_result, image_result = None, None
 
-    # Attempt 2: Retry with simplified prompt if no image was returned
+    # Retry with simplified prompt if no image
     if image_result is None:
         print("[RETRY] No image in first attempt. Retrying with simplified prompt...")
         simple_prompt = (
@@ -692,7 +914,104 @@ def generate_image(source_image_bytes: bytes, source_mime: str,
             print(f"[ERROR] Generation attempt 2 failed: {e}")
             traceback.print_exc()
 
-    return text_result, image_result
+    if image_result is None:
+        return {
+            "image_bytes": None,
+            "text": text_result,
+            "prompt": prompt,
+            "verification_score": -1,
+            "corrections_applied": [],
+        }
+
+    # ─── Stage 2 & 3: Verify + Refine Loop (max 4 rounds) ───
+    all_corrections = []
+    best_image = image_result
+    best_score = -1
+    current_image = image_result  # Track current image for passing to refinement
+    
+    for round_num in range(1, 3):  # Max 2 refinement rounds (get it right fast)
+        print(f"\n[PIPELINE] Stage 2: Verification Round {round_num}...")
+        verification = verify_output(source_image_bytes, source_mime, current_image)
+        score = verification.get("match_score", -1)
+        diffs = verification.get("differences", [])
+        
+        if score == -1:
+            print(f"[PIPELINE] Verification failed, skipping refinement.")
+            break
+        
+        # Track the best-scoring image
+        if score > best_score:
+            best_score = score
+            best_image = current_image
+            print(f"[PIPELINE] New best score: {score}/100")
+        else:
+            print(f"[PIPELINE] Score {score}/100 did not improve (best: {best_score}/100)")
+        
+        if best_score >= 80:
+            print(f"[PIPELINE] Best score {best_score}/100 >= 80 — GOOD ENOUGH, stopping.")
+            break
+        
+        # Sort differences: CRITICAL first, then MINOR, take top 8
+        sorted_diffs = sorted(diffs, key=lambda d: 0 if d.get("severity", "").upper() == "CRITICAL" else 1)
+        actionable_diffs = sorted_diffs[:8]
+        
+        if not actionable_diffs:
+            print(f"[PIPELINE] No actionable differences found, stopping.")
+            break
+        
+        print(f"[PIPELINE] Stage 3: Refinement Round {round_num} — fixing {len(actionable_diffs)} issues...")
+        correction_summary = [d.get("feature", "unknown") for d in actionable_diffs]
+        all_corrections.append({
+            "round": round_num,
+            "score_before": score,
+            "fixes": [d.get("fix_instruction", "") for d in actionable_diffs],
+            "features": correction_summary,
+        })
+        
+        # Build refinement prompt and re-generate
+        refine_prompt = _build_refinement_prompt(details, actionable_diffs, user_instructions)
+        
+        # Create a Part from the CURRENT image (latest attempt) for the refinement model to edit
+        prev_gen_part = types.Part.from_bytes(data=current_image, mime_type="image/png")
+        
+        try:
+            refine_response = _call_refinement_model(source_part, target_part, prev_gen_part, refine_prompt)
+            refine_text, refine_image = _extract_response_parts(refine_response)
+            
+            if refine_image is not None:
+                current_image = refine_image  # Set as current for next verification
+                if refine_text:
+                    text_result = refine_text
+                print(f"[PIPELINE] Refinement Round {round_num} produced new image. Verifying...")
+            else:
+                print(f"[PIPELINE] Refinement Round {round_num} returned no image, keeping previous best.")
+                break
+        except Exception as e:
+            print(f"[PIPELINE] Refinement Round {round_num} failed: {e}")
+            traceback.print_exc()
+            break
+    
+    # Final check: verify the last generated image if it hasn't been verified yet
+    if current_image is not best_image:
+        print("[PIPELINE] Final verification of last refinement...")
+        final_check = verify_output(source_image_bytes, source_mime, current_image)
+        final_score = final_check.get("match_score", -1)
+        if final_score > best_score:
+            best_score = final_score
+            best_image = current_image
+            print(f"[PIPELINE] Final refinement is best: {best_score}/100")
+        else:
+            print(f"[PIPELINE] Final refinement scored {final_score}/100, keeping best: {best_score}/100")
+    
+    print(f"\n[PIPELINE] ✅ Complete. Final score: {best_score}/100, Refinement rounds: {len(all_corrections)}")
+    
+    return {
+        "image_bytes": best_image,
+        "text": text_result,
+        "prompt": prompt,
+        "verification_score": best_score,
+        "corrections_applied": all_corrections,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -749,7 +1068,7 @@ def api_prompt_preview():
 
 @app.route("/api/generate", methods=["POST"])
 def api_generate():
-    """Generate clothing transfer: source dress image + target person."""
+    """Generate clothing transfer with agentic verification pipeline."""
     if client is None:
         return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
     try:
@@ -773,19 +1092,18 @@ def api_generate():
         target_bytes = target_file.read()
         target_mime = target_file.content_type or "image/jpeg"
 
-        # Build prompt for response (so UI can show it)
-        prompt_text = build_generation_prompt(details, user_instructions)
-
-        text_resp, image_bytes = generate_image(
+        # Run the agentic pipeline (generate → verify → refine)
+        result = generate_image(
             source_bytes, source_mime,
             target_bytes, target_mime,
             details, user_instructions,
         )
 
+        image_bytes = result.get("image_bytes")
         if image_bytes is None:
             return jsonify({
-                "error": "Model did not return an image. " + (text_resp or ""),
-                "prompt": prompt_text,
+                "error": "Model did not return an image. " + (result.get("text") or ""),
+                "prompt": result.get("prompt", ""),
             }), 500
 
         image_b64 = base64.b64encode(image_bytes).decode("utf-8")
@@ -793,8 +1111,10 @@ def api_generate():
         return jsonify({
             "success": True,
             "image": image_b64,
-            "text": text_resp,
-            "prompt": prompt_text,
+            "text": result.get("text"),
+            "prompt": result.get("prompt", ""),
+            "verification_score": result.get("verification_score", -1),
+            "corrections_applied": result.get("corrections_applied", []),
         })
 
     except json.JSONDecodeError:

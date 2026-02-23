@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Agentic Vision + Nano Banana — AI clothing analysis and virtual try-on">
+    <meta name="description" content="Agentic Vision — AI clothing analysis and virtual try-on with self-verification">
     <title>Agentic Vision — AI Clothing Transfer</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon"
@@ -19,12 +19,13 @@
             <div class="logo-icon">👁️</div>
             <div>
                 <h1>Agentic Vision + Nano Banana</h1>
-                <p class="header-sub">AI-Powered Clothing Analysis & Transfer</p>
+                <p class="header-sub">AI-Powered Clothing Analysis & Transfer with Self-Verification</p>
             </div>
         </div>
         <div class="header-badges">
             <span class="badge badge-purple">Gemini 3 Flash</span>
             <span class="badge badge-pink">Virtual Try-On</span>
+            <span class="badge badge-green">Auto-Verify</span>
         </div>
     </header>
 
@@ -33,6 +34,31 @@
         <div id="status-bar" class="status-bar">
             <div class="pulse"></div>
             <span id="status-text"></span>
+        </div>
+    </div>
+
+    <!-- Pipeline Progress -->
+    <div class="container">
+        <div class="pipeline-progress" id="pipeline-progress">
+            <div class="pipeline-step" id="pipe-analyze">
+                <div class="pipe-icon">🔍</div>
+                <div class="pipe-label">Analyze</div>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipeline-step" id="pipe-generate">
+                <div class="pipe-icon">✨</div>
+                <div class="pipe-label">Generate</div>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipeline-step" id="pipe-verify">
+                <div class="pipe-icon">🔎</div>
+                <div class="pipe-label">Verify</div>
+            </div>
+            <div class="pipe-connector"></div>
+            <div class="pipeline-step" id="pipe-refine">
+                <div class="pipe-icon">🔧</div>
+                <div class="pipe-label">Refine</div>
+            </div>
         </div>
     </div>
 
@@ -115,13 +141,18 @@
                 </div>
                 <button class="btn btn-generate" id="generate-btn" disabled>
                     <div class="spinner"></div>
-                    <span class="btn-text">✨ Generate with Nano Banana</span>
+                    <span class="btn-text">✨ Generate with Agentic Pipeline</span>
                 </button>
             </div>
             <div class="card">
                 <div class="card-title">
                     <div class="dot pink"></div>
                     Generated Result
+                    <!-- Accuracy Badge -->
+                    <div class="accuracy-badge" id="accuracy-badge" style="display:none;">
+                        <span class="accuracy-score" id="accuracy-score">--</span>
+                        <span class="accuracy-label">Match</span>
+                    </div>
                 </div>
                 <div class="output-image-container" id="generated-display">
                     <div class="output-placeholder">
@@ -132,6 +163,34 @@
                 <button class="btn-download" id="download-btn">
                     ⬇️ Download Result
                 </button>
+
+                <!-- Comparison View -->
+                <div class="comparison-section" id="comparison-section" style="display:none;">
+                    <div class="card-title" style="margin-top:14px;">
+                        <div class="dot orange"></div>
+                        Source vs Result Comparison
+                    </div>
+                    <div class="comparison-grid">
+                        <div class="comparison-item">
+                            <div class="comparison-label">Source Dress</div>
+                            <div class="comparison-img" id="compare-source"></div>
+                        </div>
+                        <div class="comparison-item">
+                            <div class="comparison-label">Generated Result</div>
+                            <div class="comparison-img" id="compare-generated"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corrections Log -->
+                <div class="corrections-log" id="corrections-log" style="display:none;">
+                    <div class="card-title" style="margin-top:14px;">
+                        <div class="dot green"></div>
+                        Verification & Corrections
+                    </div>
+                    <div class="corrections-content" id="corrections-content"></div>
+                </div>
+
                 <div class="generation-text" id="generation-text"></div>
                 <!-- Prompt Debug -->
                 <div class="prompt-debug" id="prompt-debug">
@@ -146,7 +205,8 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Powered by <strong>Gemini 3 Flash</strong> (Vision) + <strong>Gemini 2.5 Flash</strong> (Generation)</p>
+        <p>Powered by <strong>Gemini 3 Flash</strong> (Vision) + <strong>Gemini 2.5 Flash</strong> (Generation +
+            Verification)</p>
     </footer>
 
     <script src="/static/script.js"></script>

@@ -6,6 +6,7 @@
 let sourceImageFile = null;
 let targetImageFile = null;
 let extractedDetails = null;
+let sourceImageDataUrl = null;
 
 // DOM Elements
 const sourceUpload = document.getElementById('source-upload');
@@ -75,14 +76,15 @@ function handleFile(file, zone, previewEl, onFile) {
             previewEl.innerHTML = `<img src="${e.target.result}" alt="Original">`;
         }
 
-        onFile(file);
+        onFile(file, e.target.result);
     };
     reader.readAsDataURL(file);
 }
 
 // Initialize upload zones
-setupUploadZone(sourceUpload, sourceInput, originalDisplay, (file) => {
+setupUploadZone(sourceUpload, sourceInput, originalDisplay, (file, dataUrl) => {
     sourceImageFile = file;
+    sourceImageDataUrl = dataUrl;
     analyzeBtn.disabled = false;
     showStatus('info', 'Source image loaded — ready to analyze');
 });
@@ -109,6 +111,43 @@ function hideStatus() {
 }
 
 // ---------------------------------------------------------------
+// Pipeline Progress
+// ---------------------------------------------------------------
+
+function setPipelineStep(activeStep) {
+    const steps = ['pipe-analyze', 'pipe-generate', 'pipe-verify', 'pipe-refine'];
+    const pipeline = document.getElementById('pipeline-progress');
+    pipeline.classList.add('visible');
+
+    steps.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('active', 'done');
+    });
+
+    const activeIndex = steps.indexOf(activeStep);
+    for (let i = 0; i < activeIndex; i++) {
+        document.getElementById(steps[i]).classList.add('done');
+    }
+    if (activeIndex >= 0) {
+        document.getElementById(steps[activeIndex]).classList.add('active');
+    }
+}
+
+function completePipelineStep(stepId) {
+    const el = document.getElementById(stepId);
+    el.classList.remove('active');
+    el.classList.add('done');
+}
+
+function resetPipeline() {
+    const steps = ['pipe-analyze', 'pipe-generate', 'pipe-verify', 'pipe-refine'];
+    steps.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('active', 'done');
+    });
+}
+
+// ---------------------------------------------------------------
 // Toggle Details Panel
 // ---------------------------------------------------------------
 
@@ -131,6 +170,7 @@ analyzeBtn.addEventListener('click', async () => {
     analyzeBtn.disabled = true;
     analyzeBtn.classList.add('loading');
     showStatus('info', 'Analyzing with Agentic Vision (2-pass)... this may take a moment');
+    setPipelineStep('pipe-analyze');
 
     const formData = new FormData();
     formData.append('image', sourceImageFile);
@@ -155,6 +195,7 @@ analyzeBtn.addEventListener('click', async () => {
         const toggle = document.getElementById('details-toggle');
         if (toggle) toggle.textContent = '▲ Collapse';
 
+        completePipelineStep('pipe-analyze');
         showStatus('success', 'Analysis complete — all details extracted');
 
         if (targetImageFile) {
@@ -163,6 +204,7 @@ analyzeBtn.addEventListener('click', async () => {
 
     } catch (err) {
         showStatus('error', `Analysis failed: ${err.message}`);
+        resetPipeline();
         console.error(err);
     } finally {
         analyzeBtn.disabled = false;
@@ -171,7 +213,7 @@ analyzeBtn.addEventListener('click', async () => {
 });
 
 // ---------------------------------------------------------------
-// Generate Image
+// Generate Image with Agentic Pipeline
 // ---------------------------------------------------------------
 
 generateBtn.addEventListener('click', async () => {
@@ -179,18 +221,26 @@ generateBtn.addEventListener('click', async () => {
 
     generateBtn.disabled = true;
     generateBtn.classList.add('loading');
-    showStatus('info', 'Generating with Nano Banana... this may take a moment');
+    showStatus('info', '🚀 Stage 1: Generating initial image...');
+    setPipelineStep('pipe-generate');
+
     generatedDisplay.innerHTML = `
         <div class="output-placeholder">
             <div class="icon">⏳</div>
-            <p>Generating... please wait</p>
+            <p>Generating... this uses AI verification & refinement</p>
+            <p class="pipeline-hint">Generate → Verify → Refine (if needed)</p>
         </div>`;
 
-    // Hide prompt debug while generating
+    // Hide previous results
     const promptDebug = document.getElementById('prompt-debug');
     const promptContent = document.getElementById('prompt-content');
     promptDebug.classList.remove('visible');
     promptContent.classList.remove('visible');
+    document.getElementById('accuracy-badge').style.display = 'none';
+    document.getElementById('comparison-section').style.display = 'none';
+    document.getElementById('corrections-log').style.display = 'none';
+    downloadBtn.classList.remove('visible');
+    genText.classList.remove('visible');
 
     const userInstructions = document.getElementById('user-instructions')?.value || '';
 
@@ -201,10 +251,29 @@ generateBtn.addEventListener('click', async () => {
     formData.append('user_instructions', userInstructions);
 
     try {
+        // Update status during the long wait
+        const statusUpdater = setInterval(() => {
+            const msgs = [
+                '🔍 Stage 2: Verifying dress details against source...',
+                '🔧 Stage 3: Refining any missing details...',
+                '⏳ Still working... AI is checking every detail...',
+            ];
+            const current = statusText.textContent;
+            if (current.includes('Stage 1')) {
+                showStatus('info', msgs[0]);
+                setPipelineStep('pipe-verify');
+            } else if (current.includes('Stage 2')) {
+                showStatus('info', msgs[1]);
+                setPipelineStep('pipe-refine');
+            }
+        }, 15000);
+
         const resp = await fetch('/api/generate', {
             method: 'POST',
             body: formData,
         });
+
+        clearInterval(statusUpdater);
 
         const data = await resp.json();
 
@@ -218,6 +287,21 @@ generateBtn.addEventListener('click', async () => {
         downloadBtn.classList.add('visible');
         downloadBtn.onclick = () => downloadImage(imgSrc, 'generated_outfit.png');
 
+        // Show accuracy badge
+        if (data.verification_score !== undefined && data.verification_score >= 0) {
+            showAccuracyBadge(data.verification_score);
+        }
+
+        // Show comparison view
+        if (sourceImageDataUrl) {
+            showComparison(sourceImageDataUrl, imgSrc);
+        }
+
+        // Show corrections log
+        if (data.corrections_applied && data.corrections_applied.length > 0) {
+            showCorrectionsLog(data.corrections_applied, data.verification_score);
+        }
+
         if (data.text) {
             genText.textContent = data.text;
             genText.classList.add('visible');
@@ -228,7 +312,18 @@ generateBtn.addEventListener('click', async () => {
             promptDebug.classList.add('visible');
         }
 
-        showStatus('success', 'Image generated successfully!');
+        // Complete all pipeline steps
+        completePipelineStep('pipe-generate');
+        completePipelineStep('pipe-verify');
+        completePipelineStep('pipe-refine');
+
+        const scoreInfo = data.verification_score >= 0
+            ? ` (${data.verification_score}% match)`
+            : '';
+        const refinedInfo = data.corrections_applied?.length > 0
+            ? ` — ${data.corrections_applied.length} refinement round(s)`
+            : '';
+        showStatus('success', `Image generated successfully!${scoreInfo}${refinedInfo}`);
 
         // Smooth scroll to result
         generatedDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -246,12 +341,87 @@ generateBtn.addEventListener('click', async () => {
                 <div class="icon">❌</div>
                 <p>Generation failed — try again</p>
             </div>`;
+        resetPipeline();
         console.error(err);
     } finally {
         generateBtn.disabled = false;
         generateBtn.classList.remove('loading');
     }
 });
+
+// ---------------------------------------------------------------
+// Accuracy Badge
+// ---------------------------------------------------------------
+
+function showAccuracyBadge(score) {
+    const badge = document.getElementById('accuracy-badge');
+    const scoreEl = document.getElementById('accuracy-score');
+    scoreEl.textContent = `${score}%`;
+
+    // Color code: green >= 90, yellow >= 70, red < 70
+    badge.classList.remove('score-high', 'score-mid', 'score-low');
+    if (score >= 90) {
+        badge.classList.add('score-high');
+    } else if (score >= 70) {
+        badge.classList.add('score-mid');
+    } else {
+        badge.classList.add('score-low');
+    }
+    badge.style.display = 'flex';
+}
+
+// ---------------------------------------------------------------
+// Comparison View
+// ---------------------------------------------------------------
+
+function showComparison(sourceSrc, generatedSrc) {
+    const section = document.getElementById('comparison-section');
+    const compareSource = document.getElementById('compare-source');
+    const compareGenerated = document.getElementById('compare-generated');
+
+    compareSource.innerHTML = `<img src="${sourceSrc}" alt="Source Dress">`;
+    compareGenerated.innerHTML = `<img src="${generatedSrc}" alt="Generated Result">`;
+    section.style.display = 'block';
+}
+
+// ---------------------------------------------------------------
+// Corrections Log
+// ---------------------------------------------------------------
+
+function showCorrectionsLog(corrections, finalScore) {
+    const logSection = document.getElementById('corrections-log');
+    const content = document.getElementById('corrections-content');
+
+    let html = '';
+    corrections.forEach(round => {
+        html += `<div class="correction-round">
+            <div class="round-header">
+                <span class="round-badge">Round ${round.round}</span>
+                <span class="round-score">Score before: ${round.score_before}%</span>
+            </div>
+            <div class="round-fixes">`;
+
+        round.features.forEach((feature, i) => {
+            const fix = round.fixes[i] || '';
+            html += `<div class="fix-item">
+                <span class="fix-feature">🔧 ${feature}</span>
+                <span class="fix-detail">${fix}</span>
+            </div>`;
+        });
+
+        html += `</div></div>`;
+    });
+
+    if (finalScore >= 0) {
+        const scoreClass = finalScore >= 90 ? 'score-high' : finalScore >= 70 ? 'score-mid' : 'score-low';
+        html += `<div class="final-score-bar ${scoreClass}">
+            Final Match Score: <strong>${finalScore}%</strong>
+        </div>`;
+    }
+
+    content.innerHTML = html;
+    logSection.style.display = 'block';
+}
 
 // Toggle prompt debug panel
 function togglePrompt() {
