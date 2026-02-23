@@ -544,36 +544,12 @@ Primary Color: {primary}
 # ---------------------------------------------------------------------------
 
 GENERATION_SYSTEM_INSTRUCTION = (
-    "You are a PIXEL-PERFECT virtual try-on AI. Your #1 skill is VISUAL COPYING. "
-    "You copy clothing and jewelry from one photo onto a person in another photo "
-    "with 100% fidelity to the original."
-    "\n\n🚨 FACE RULE (HIGHEST PRIORITY — NEVER VIOLATE): "
-    "• The output image MUST show the FACE of the TARGET PERSON (IMAGE 2) — NOT the face from the source/reference photo (IMAGE 1). "
-    "• COMPLETELY IGNORE the person's face, body, skin tone, and hair in the reference photo. "
-    "• Only extract CLOTHING and JEWELRY from the reference photo — NOTHING ELSE. "
-    "• If you merge faces or copy the source person's face, the result is WRONG. "
-    "\n\nYOUR APPROACH — VISUAL COPYING (not interpretation): "
-    "• Treat the reference outfit photo as a TEMPLATE for clothes ONLY. "
-    "• ZOOM INTO every region of the outfit: neckline, bodice, sleeves, waist, skirt, hem, borders. "
-    "• For EACH region, copy the EXACT colors, patterns, embroidery density, and texture. "
-    "• Do NOT interpret or simplify — if the source has dense gold embroidery, your output must too. "
-    "• Do NOT add anything not in the source. Do NOT remove anything that IS in the source. "
-    "\n\n⚠️ CRITICAL — OUTPUT RULES: "
-    "• Output shows EXACTLY ONE PERSON — the person from IMAGE 2 (target photo). "
-    "• The person's FACE in output = FACE from IMAGE 2. NEVER from IMAGE 1. "
-    "• Do NOT merge, blend, or overlay the two photos. "
-    "\n\nWHAT TO KEEP UNCHANGED (100% from IMAGE 2 / target photo): "
-    "• Face, facial features, skin color, hair, body shape, pose — 100% identical to IMAGE 2 "
-    "• Background, lighting, camera angle — exactly the same as IMAGE 2 "
-    "\n\nWHAT TO COPY PIXEL-PERFECTLY (from IMAGE 1 / reference photo — CLOTHES ONLY): "
-    "• Dress/outfit: exact colors (not similar — EXACT), exact pattern, exact embroidery "
-    "  density and motifs, exact beadwork, exact neckline shape, exact sleeve style, "
-    "  exact silhouette, exact length, exact border designs, exact fabric texture "
-    "• Jewelry: every single piece — exact metal color, exact stone count and colors, "
-    "  exact chain style, exact placement on body "
-    "• Embellishment density: if the source has HEAVY embroidery covering 80% of the fabric, "
-    "  your output must also have HEAVY embroidery covering 80% of the fabric "
-    "\n\nThe output must be photorealistic with natural fit, draping, and shadows."
+    "You are a photo editor specializing in virtual try-on. "
+    "When given a person's photo and an outfit reference photo, you EDIT the person's photo "
+    "to replace ONLY their clothing with the exact outfit from the reference. "
+    "The person's face, skin, hair, body, pose, and background stay IDENTICAL. "
+    "You output a SINGLE edited photo — never a collage, never two people, never side-by-side images. "
+    "The output looks like the original person's photo but with different clothes."
 )
 
 
@@ -588,7 +564,7 @@ GENERATION_MODELS = [
 ]
 
 def _call_generation_model(source_part, target_part, prompt: str):
-    """Call the generation model with target + source reference images."""
+    """Call the generation model — instruction first, then images."""
     for model_name in GENERATION_MODELS:
         for attempt in range(3):
             try:
@@ -596,28 +572,11 @@ def _call_generation_model(source_part, target_part, prompt: str):
                 resp = client.models.generate_content(
                     model=model_name,
                     contents=[
-                        source_part,
-                        (
-                            "👆 IMAGE 1 — THE SOURCE OUTFIT (TRUTH). "
-                            "ONLY extract CLOTHING and JEWELRY from this image. "
-                            "IGNORE the person's face, body, and skin — you do NOT need them. "
-                            "Study the outfit VERY carefully. ZOOM INTO every region: "
-                            "neckline, bodice embroidery, sleeve details, waist area, skirt patterns, "
-                            "hemline border, all jewelry pieces. "
-                            "Copy EVERY clothing detail — exact colors, exact embroidery "
-                            "density, exact patterns, exact jewelry. Do NOT simplify anything."
-                        ),
+                        prompt + "\n\nHere are the two reference photos:",
                         target_part,
-                        (
-                            "👆 IMAGE 2 — THE PERSON (keep THIS face in the output). "
-                            "Put the EXACT outfit from IMAGE 1 onto this person. "
-                            "🚨 The output MUST show THIS person's face — NOT the face from IMAGE 1. "
-                            "Keep their face, skin, hair, body, pose, and background 100% UNCHANGED. "
-                            "ONLY replace their clothing and jewelry with what you see in IMAGE 1.\n\n"
-                            "⚠️ Output = THIS person's face + IMAGE 1's clothing. "
-                            "If you show the face from IMAGE 1, the result is WRONG.\n\n"
-                            + prompt
-                        ),
+                        "[PERSON PHOTO — edit this photo, keep this face and body unchanged]",
+                        source_part,
+                        "[OUTFIT REFERENCE — copy this exact outfit onto the person above]",
                     ],
                     config=types.GenerateContentConfig(
                         response_modalities=["Text", "Image"],
@@ -810,36 +769,21 @@ Primary Color: {primary_color}
 
 
 def _call_refinement_model(source_part, target_part, prev_gen_part, prompt: str):
-    """Call generation model for refinement, passing the previous generated image
-    so the model can make targeted edits instead of generating from scratch."""
+    """Call generation model for refinement."""
     for attempt in range(3):
         try:
             print(f"[REFINE] Attempt {attempt+1}/3...")
             resp = client.models.generate_content(
                 model="gemini-2.5-flash-image",
                 contents=[
-                    source_part,
-                    (
-                        "👆 IMAGE 1 — SOURCE OUTFIT (THE TRUTH). "
-                        "ONLY extract CLOTHING and JEWELRY from this image. "
-                        "IGNORE the person's face/body here. "
-                        "ZOOM INTO every region: neckline, bodice, sleeves, waist, skirt, "
-                        "hemline border, jewelry. Every clothing detail here must appear in your output."
-                    ),
+                    "Edit the PREVIOUS ATTEMPT photo below to fix outfit issues. "
+                    "Keep the person's face unchanged. Match the outfit to the OUTFIT REFERENCE.\n\n" + prompt,
                     target_part,
-                    (
-                        "👆 IMAGE 2 — THE PERSON (keep THIS face). "
-                        "🚨 The output MUST show THIS person's face — NOT the face from IMAGE 1. "
-                        "Keep their face, skin, hair, body, pose, and background 100% UNCHANGED."
-                    ),
+                    "[PERSON — keep this face]",
+                    source_part,
+                    "[OUTFIT REFERENCE — match this]",
                     prev_gen_part,
-                    (
-                        "👆 IMAGE 3 — YOUR PREVIOUS ATTEMPT. It has specific issues. "
-                        "Compare it region-by-region with IMAGE 1 (source outfit) and fix "
-                        "the clothing/jewelry differences listed below. EDIT this image — do NOT start from scratch. "
-                        "🚨 Keep the FACE from IMAGE 2 — do NOT change it.\n\n"
-                        + prompt
-                    ),
+                    "[PREVIOUS ATTEMPT — edit this to fix issues listed above]",
                 ],
                 config=types.GenerateContentConfig(
                     response_modalities=["Text", "Image"],
@@ -1015,6 +959,185 @@ def generate_image(source_image_bytes: bytes, source_mime: str,
 
 
 # ---------------------------------------------------------------------------
+# Direct Image-to-Image Pipeline (No JSON Analysis)
+# ---------------------------------------------------------------------------
+
+# Quick outfit description prompt — used to describe source outfit as text
+OUTFIT_DESCRIBE_PROMPT = (
+    "Describe this outfit and jewelry in ONE detailed paragraph. "
+    "Include: dress type, colors (exact shades), fabric, pattern, embroidery details, "
+    "neckline, sleeves, silhouette, length, border designs, and every jewelry piece "
+    "(necklace, earrings, bangles, maang tikka, rings). "
+    "Be extremely specific about embroidery density, motifs, and placement. "
+    "This description will be used to recreate the outfit exactly."
+)
+
+
+def _describe_outfit(source_image_bytes: bytes, source_mime: str) -> str:
+    """Quick 1-call outfit description — returns text paragraph."""
+    source_part = types.Part.from_bytes(data=source_image_bytes, mime_type=source_mime)
+    try:
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[source_part, OUTFIT_DESCRIBE_PROMPT],
+        )
+        desc = resp.text.strip()
+        print(f"[DESCRIBE] Got outfit description ({len(desc)} chars)")
+        return desc
+    except Exception as e:
+        print(f"[DESCRIBE] Failed: {e}")
+        return ""
+
+
+def generate_image_direct(source_image_bytes: bytes, source_mime: str,
+                          target_image_bytes: bytes, target_mime: str,
+                          user_instructions: str = "") -> dict:
+    """
+    Clothing transfer pipeline:
+    1. Describe source outfit as text (quick, 1 call)
+    2. Generate: send ONLY target image + text description → single edited photo
+    3. Verify against source image
+    4. Refine if needed (1 round max)
+    """
+    target_part = types.Part.from_bytes(data=target_image_bytes, mime_type=target_mime)
+    source_part = types.Part.from_bytes(data=source_image_bytes, mime_type=source_mime)
+
+    # ─── Stage 1: Describe the source outfit ───
+    print("[DIRECT] Stage 1: Describing source outfit...")
+    outfit_desc = _describe_outfit(source_image_bytes, source_mime)
+    if not outfit_desc:
+        return {"image_bytes": None, "text": "Failed to describe source outfit", "verification_score": -1, "corrections_applied": []}
+
+    # Build the generation prompt with outfit description
+    gen_prompt = (
+        f"Edit this photo: replace the person's current clothing and jewelry with this exact outfit:\n\n"
+        f"{outfit_desc}\n\n"
+        f"RULES:\n"
+        f"- Keep the person's face, skin, hair, body, pose, and background EXACTLY the same\n"
+        f"- ONLY replace their clothing and jewelry\n"
+        f"- Output a SINGLE photorealistic photo, NOT a collage\n"
+        f"- The outfit must match the description above in every detail"
+    )
+    if user_instructions and user_instructions.strip():
+        gen_prompt += f"\n\nAdditional instructions: {user_instructions.strip()}"
+
+    # ─── Stage 2: Generate (single image + text) ───
+    print("[DIRECT] Stage 2: Generating edited photo...")
+    try:
+        for attempt in range(3):
+            try:
+                print(f"[GEN-DIRECT] Attempt {attempt+1}/3...")
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash-image",
+                    contents=[
+                        gen_prompt,
+                        target_part,
+                    ],
+                    config=types.GenerateContentConfig(
+                        response_modalities=["Text", "Image"],
+                        system_instruction=(
+                            "You are a photo editor. You edit photos to change only the clothing. "
+                            "Keep the person's face, body, pose, and background identical. "
+                            "Output a single edited photo."
+                        ),
+                        temperature=0.4,
+                    ),
+                )
+                print("[GEN-DIRECT] Success!")
+                break
+            except Exception as e:
+                if "503" in str(e) or "UNAVAILABLE" in str(e):
+                    print(f"[GEN-DIRECT] 503 — waiting {10*(attempt+1)}s...")
+                    _time.sleep(10 * (attempt + 1))
+                else:
+                    raise
+        text_result, image_result = _extract_response_parts(response)
+    except Exception as e:
+        print(f"[DIRECT] Generation failed: {e}")
+        traceback.print_exc()
+        return {"image_bytes": None, "text": str(e), "verification_score": -1, "corrections_applied": []}
+
+    if image_result is None:
+        print("[DIRECT] No image returned.")
+        return {"image_bytes": None, "text": text_result, "verification_score": -1, "corrections_applied": []}
+
+    # ─── Stage 3: Verify ───
+    print("[DIRECT] Stage 3: Verifying output...")
+    verification = verify_output(source_image_bytes, source_mime, image_result)
+    score = verification.get("match_score", -1)
+    diffs = verification.get("differences", [])
+
+    if score >= 80 or score == -1:
+        print(f"[DIRECT] ✅ Score {score}/100 — done.")
+        return {
+            "image_bytes": image_result,
+            "text": text_result,
+            "verification_score": score,
+            "corrections_applied": [],
+        }
+
+    # ─── Stage 4: Refine (1 round, also single-image) ───
+    sorted_diffs = sorted(diffs, key=lambda d: 0 if d.get("severity", "").upper() == "CRITICAL" else 1)
+    actionable = sorted_diffs[:6]
+
+    if actionable:
+        print(f"[DIRECT] Stage 4: Refining {len(actionable)} issues...")
+        fix_lines = []
+        for i, diff in enumerate(actionable, 1):
+            fix_lines.append(f"  {i}. {diff.get('feature', '?')}: {diff.get('fix_instruction', 'Fix this')}")
+        fixes_block = "\n".join(fix_lines)
+
+        refine_prompt = (
+            f"Edit this photo to fix these outfit issues:\n\n"
+            f"{fixes_block}\n\n"
+            f"The correct outfit should be:\n{outfit_desc}\n\n"
+            f"Keep the person's face, body, and background UNCHANGED. "
+            f"Only fix the clothing details listed above."
+        )
+
+        prev_gen_part = types.Part.from_bytes(data=image_result, mime_type="image/png")
+        try:
+            for attempt in range(3):
+                try:
+                    refine_response = client.models.generate_content(
+                        model="gemini-2.5-flash-image",
+                        contents=[refine_prompt, prev_gen_part],
+                        config=types.GenerateContentConfig(
+                            response_modalities=["Text", "Image"],
+                            system_instruction="You are a photo editor. Fix the clothing in this photo. Keep the face unchanged.",
+                            temperature=0.4,
+                        ),
+                    )
+                    break
+                except Exception as e:
+                    if "503" in str(e) or "UNAVAILABLE" in str(e):
+                        _time.sleep(10 * (attempt + 1))
+                    else:
+                        raise
+            _, refine_image = _extract_response_parts(refine_response)
+            if refine_image is not None:
+                refine_check = verify_output(source_image_bytes, source_mime, refine_image)
+                refine_score = refine_check.get("match_score", -1)
+                print(f"[DIRECT] Refinement score: {refine_score}/100")
+                if refine_score > score:
+                    image_result = refine_image
+                    score = refine_score
+                    print("[DIRECT] Using refined image.")
+                else:
+                    print("[DIRECT] Keeping original.")
+        except Exception as e:
+            print(f"[DIRECT] Refinement failed: {e}")
+
+    print(f"[DIRECT] ✅ Complete. Final score: {score}/100")
+    return {
+        "image_bytes": image_result,
+        "text": text_result,
+        "verification_score": score,
+        "corrections_applied": [{"round": 1, "score_before": verification.get("match_score", -1), "fixes": [d.get("fix_instruction", "") for d in actionable], "features": [d.get("feature", "") for d in actionable]}] if actionable else [],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Flask Routes
 # ---------------------------------------------------------------------------
 
@@ -1119,6 +1242,53 @@ def api_generate():
 
     except json.JSONDecodeError:
         return jsonify({"error": "Invalid details JSON"}), 400
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/generate-direct", methods=["POST"])
+def api_generate_direct():
+    """Direct image-to-image clothing transfer — no JSON analysis needed."""
+    if client is None:
+        return jsonify({"error": "GEMINI_API_KEY not configured on server"}), 503
+    try:
+        if "source_image" not in request.files:
+            return jsonify({"error": "No source image provided"}), 400
+        if "target_image" not in request.files:
+            return jsonify({"error": "No target image provided"}), 400
+
+        source_file = request.files["source_image"]
+        source_bytes = source_file.read()
+        source_mime = source_file.content_type or "image/jpeg"
+
+        target_file = request.files["target_image"]
+        target_bytes = target_file.read()
+        target_mime = target_file.content_type or "image/jpeg"
+
+        user_instructions = request.form.get("user_instructions", "")
+
+        result = generate_image_direct(
+            source_bytes, source_mime,
+            target_bytes, target_mime,
+            user_instructions,
+        )
+
+        image_bytes = result.get("image_bytes")
+        if image_bytes is None:
+            return jsonify({
+                "error": "Model did not return an image. " + (result.get("text") or ""),
+            }), 500
+
+        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+        return jsonify({
+            "success": True,
+            "image": image_b64,
+            "text": result.get("text"),
+            "verification_score": result.get("verification_score", -1),
+            "corrections_applied": result.get("corrections_applied", []),
+        })
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

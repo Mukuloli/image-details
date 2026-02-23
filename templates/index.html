@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Agentic Vision — AI clothing analysis and virtual try-on with self-verification">
-    <title>Agentic Vision — AI Clothing Transfer</title>
+    <meta name="description" content="AI Virtual Try-On — Direct clothing transfer with verification">
+    <title>Virtual Try-On — AI Clothing Transfer</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👁️</text></svg>">
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👗</text></svg>">
 </head>
 
 <body>
@@ -16,14 +16,14 @@
     <!-- Header -->
     <header class="header">
         <div class="header-left">
-            <div class="logo-icon">👁️</div>
+            <div class="logo-icon">👗</div>
             <div>
-                <h1>Agentic Vision + Nano Banana</h1>
-                <p class="header-sub">AI-Powered Clothing Analysis & Transfer with Self-Verification</p>
+                <h1>Virtual Try-On</h1>
+                <p class="header-sub">Direct Image-to-Image Clothing Transfer with AI Verification</p>
             </div>
         </div>
         <div class="header-badges">
-            <span class="badge badge-purple">Gemini 3 Flash</span>
+            <span class="badge badge-purple">Gemini 2.5 Flash</span>
             <span class="badge badge-pink">Virtual Try-On</span>
             <span class="badge badge-green">Auto-Verify</span>
         </div>
@@ -40,11 +40,6 @@
     <!-- Pipeline Progress -->
     <div class="container">
         <div class="pipeline-progress" id="pipeline-progress">
-            <div class="pipeline-step" id="pipe-analyze">
-                <div class="pipe-icon">🔍</div>
-                <div class="pipe-label">Analyze</div>
-            </div>
-            <div class="pipe-connector"></div>
             <div class="pipeline-step" id="pipe-generate">
                 <div class="pipe-icon">✨</div>
                 <div class="pipe-label">Generate</div>
@@ -64,23 +59,19 @@
 
     <!-- ============ STEP 1: Source Upload + Preview ============ -->
     <section class="container section-row">
-        <div class="step-label"><span class="step-num">1</span> Source Image</div>
+        <div class="step-label"><span class="step-num">1</span> Source Outfit</div>
         <div class="row-grid">
             <div class="card">
                 <div class="card-title">
                     <div class="dot purple"></div>
-                    Upload Source
+                    Upload Source Outfit
                 </div>
                 <div class="upload-zone" id="source-upload">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">Click or drag to upload</div>
-                    <div class="upload-hint">The clothing from this image will be analyzed</div>
+                    <div class="upload-hint">The dress & jewelry from this image will be copied</div>
                     <input type="file" id="source-input" accept="image/*">
                 </div>
-                <button class="btn btn-primary" id="analyze-btn" disabled>
-                    <div class="spinner"></div>
-                    <span class="btn-text">🔍 Analyze with Agentic Vision</span>
-                </button>
             </div>
             <div class="card">
                 <div class="card-title">
@@ -97,25 +88,9 @@
         </div>
     </section>
 
-    <!-- ============ STEP 2: Extracted Details ============ -->
-    <section class="container">
-        <div class="step-label"><span class="step-num">2</span> Extracted Details</div>
-        <div class="card">
-            <div class="card-title">
-                <div class="dot green"></div>
-                Analysis Results
-                <button class="details-toggle" id="details-toggle" onclick="toggleDetails()">
-                    ▼ Expand
-                </button>
-            </div>
-            <pre class="details-panel collapsed"
-                id="details-panel"><span class="placeholder">Analysis results will appear here after processing...</span></pre>
-        </div>
-    </section>
-
-    <!-- ============ STEP 3: Target Upload + Generate ============ -->
+    <!-- ============ STEP 2: Target Upload + Generate ============ -->
     <section class="container section-row">
-        <div class="step-label"><span class="step-num">3</span> Target Person & Generate</div>
+        <div class="step-label"><span class="step-num">2</span> Target Person & Generate</div>
         <div class="row-grid">
             <div class="card">
                 <div class="card-title">
@@ -125,7 +100,7 @@
                 <div class="upload-zone" id="target-upload">
                     <div class="upload-icon">🧑</div>
                     <div class="upload-text">Click or drag to upload</div>
-                    <div class="upload-hint">This person will wear the analyzed clothing</div>
+                    <div class="upload-hint">This person will wear the source outfit</div>
                     <input type="file" id="target-input" accept="image/*">
                 </div>
                 <div class="user-instructions-wrapper">
@@ -134,14 +109,13 @@
                             class="optional-tag">(Optional)</span>
                     </label>
                     <textarea id="user-instructions" class="user-instructions"
-                        placeholder="e.g., White studio background, soft natural lighting, person facing camera, professional look, high quality photograph..."
+                        placeholder="e.g., White studio background, soft natural lighting, professional look..."
                         rows="3"></textarea>
-                    <div class="instructions-hint">💡 Yahan likho jo photo mein chahiye — background, lighting, pose,
-                        quality etc.</div>
+                    <div class="instructions-hint">💡 Optional: background, lighting, pose adjustments</div>
                 </div>
                 <button class="btn btn-generate" id="generate-btn" disabled>
                     <div class="spinner"></div>
-                    <span class="btn-text">✨ Generate with Agentic Pipeline</span>
+                    <span class="btn-text">✨ Generate — Copy Outfit</span>
                 </button>
             </div>
             <div class="card">
@@ -192,21 +166,13 @@
                 </div>
 
                 <div class="generation-text" id="generation-text"></div>
-                <!-- Prompt Debug -->
-                <div class="prompt-debug" id="prompt-debug">
-                    <button class="prompt-toggle" id="prompt-toggle" onclick="togglePrompt()">
-                        🔍 View Generation Prompt
-                    </button>
-                    <pre class="prompt-content" id="prompt-content"></pre>
-                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Powered by <strong>Gemini 3 Flash</strong> (Vision) + <strong>Gemini 2.5 Flash</strong> (Generation +
-            Verification)</p>
+        <p>Powered by <strong>Gemini 2.5 Flash</strong> (Generation + Verification) — Direct Image-to-Image Pipeline</p>
     </footer>
 
     <script src="/static/script.js"></script>
