@@ -102,18 +102,15 @@ def _deep_merge(base: dict, updates: dict) -> dict:
 
 
 def analyze_image(image_bytes: bytes, mime_type: str) -> dict:
-    """Agentic multi-pass analysis with ZOOM-FOCUS for 100% detail capture.
+    """Single-pass comprehensive analysis for fast response (Render-compatible).
     
-    Pass 1: Full analysis — extract all dress & jewelry details.
-    Pass 2: Self-review — look at image again, find gaps, fill them in.
-    Pass 3: ZOOM-FOCUS on CLOTHING — zoom into embroidery, borders, fabric, neckline, sleeves.
-    Pass 4: ZOOM-FOCUS on JEWELRY — zoom into each piece, verify stone colors.
-    Result: Deep merge of all passes for maximum detail.
+    Uses one detailed Gemini call to extract all dress & jewelry details.
+    Optimized to complete within Render's 30-second request timeout.
     """
     image_part = types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
 
-    # ─── Pass 1: Full analysis ───
-    print("[VISION] Pass 1/4: Full image analysis (gemini-3-flash-preview)...")
+    # ─── Single comprehensive pass ───
+    print("[VISION] Analyzing image (single comprehensive pass)...")
     response = client.models.generate_content(
         model="gemini-3-flash-preview",
         contents=[image_part, VISION_PROMPT],
@@ -121,173 +118,8 @@ def analyze_image(image_bytes: bytes, mime_type: str) -> dict:
             temperature=0.2,
         ),
     )
-    first_pass = _parse_json_response(response.text)
-    print(f"[VISION] Pass 1 complete. Got {len(first_pass)} fields.")
-
-    # ─── Pass 2: Self-review — find gaps & missing details ───
-    print("[VISION] Pass 2/4: Self-reviewing for missed details...")
-    refinement_text = REFINEMENT_PROMPT.replace(
-        "{first_pass_json}", json.dumps(first_pass, indent=2, ensure_ascii=False)
-    ).replace(
-        "{latkan_value}", first_pass.get("latkan_tassels", "not specified")
-    )
-    try:
-        refine_response = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=[image_part, refinement_text],
-            config=types.GenerateContentConfig(
-                temperature=0.15,
-            ),
-        )
-        second_pass = _parse_json_response(refine_response.text)
-        updates_count = len(second_pass)
-        print(f"[VISION] Pass 2 complete. Found {updates_count} updates/additions.")
-        result = _deep_merge(first_pass, second_pass)
-    except Exception as e:
-        print(f"[VISION] ⚠️ Pass 2 failed ({e}), using Pass 1 result only.")
-        result = first_pass
-
-    # ─── Pass 3: ZOOM-FOCUS on CLOTHING DETAILS ───
-    print("[VISION] Pass 3/4: ZOOM-FOCUS on clothing details...")
-    clothing_zoom_prompt = f"""You are zooming into this image to verify CLOTHING details.
-The current analysis says:
-- Dress type: {result.get('dress_type', 'unknown')}
-- Primary color: {result.get('primary_color', 'unknown')}
-- Primary color HEX: {result.get('primary_color_hex', 'unknown')}
-- Neckline: {result.get('neckline', 'unknown')}
-- Embroidery: {str(result.get('embroidery', 'unknown'))[:200]}
-- Border: {str(result.get('border_design', 'unknown'))[:200]}
-- Latkans: {result.get('latkan_tassels', 'unknown')}
-
-NOW ZOOM INTO THE IMAGE and verify/correct each clothing area:
-
-0. **🚨 PRIMARY COLOR VERIFICATION (MOST CRITICAL — DO THIS FIRST)** — 
-   Look at the LARGEST flat area of the dress fabric (no embroidery, no shadow).
-   The current analysis says the color is: "{result.get('primary_color', 'unknown')}" ({result.get('primary_color_hex', '?')})
-   - Is this EXACTLY right? Or is it slightly different?
-   - Common mistakes: calling fuchsia "pink", calling magenta "red", calling teal "blue"
-   - If the color is even SLIGHTLY wrong, provide the CORRECTED color name + HEX code
-   - The HEX must match what your eyes see in the actual image pixels
-
-1. **NECKLINE** — Zoom in to the neckline area. Is the current description accurate? What is the EXACT shape (V-neck, sweetheart, round, boat, square, scalloped)? What embellishment is on the neckline edge?
-
-2. **EMBROIDERY ZONES** — Zoom into EACH embroidery zone separately:
-   - BODICE embroidery: What EXACT motifs (floral, paisley, geometric, vine)? How dense? What threads (zari, sequin, resham)?
-   - SKIRT embroidery: Same questions. Is it all-over or in panels/zones?
-   - SLEEVE embroidery: What design? Dense or sparse?
-   - WAISTBAND: Is there a decorative waistband between bodice and skirt?
-
-3. **BORDERS** — Zoom into ALL borders:
-   - HEMLINE border: Width in cm, design pattern, colors, straight or scalloped edge?
-   - SLEEVE border: Same details
-   - DUPATTA border: Same details
-   - Are the borders SAME on all pieces or DIFFERENT?
-
-4. **FABRIC TEXTURE** — Zoom into the base fabric between embroidery:
-   - Is there a micro-pattern or booti (small repeated motifs)?
-   - What is the fabric weave (silk, georgette, net, velvet)?
-
-5. **LATKANS/TASSELS** — Zoom into any tassels on the waist/drawstring:
-   - EXACT count, size (small/medium/large), material, colors, hanging length
-
-Return ONLY a JSON object with corrections/additions. For UNCHANGED fields, omit them.
-Output format:
-```json
-{{
-  "primary_color": "CORRECTED exact shade name + hex if the current one is wrong",
-  "primary_color_hex": "#CORRECTED_HEX if wrong",
-  "neckline": "corrected description if different",
-  "embroidery": "corrected/enhanced description",
-  "border_design": "corrected/enhanced description",
-  "latkan_tassels": "corrected description",
-  "fabric_texture": "more precise texture description",
-  "skirt_waistband": "description if found",
-  "special_design_features": "any features missed"
-}}
-```
-ONLY include fields that need correction or enhancement. Omit unchanged fields."""
-
-
-    try:
-        zoom_clothing = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=[image_part, clothing_zoom_prompt],
-            config=types.GenerateContentConfig(temperature=0.1),
-        )
-        clothing_updates = _parse_json_response(zoom_clothing.text)
-        if clothing_updates:
-            print(f"[VISION] Pass 3 complete. Clothing zoom found {len(clothing_updates)} corrections/additions.")
-            result = _deep_merge(result, clothing_updates)
-        else:
-            print("[VISION] Pass 3 complete. No clothing corrections needed.")
-    except Exception as e:
-        print(f"[VISION] ⚠️ Pass 3 (clothing zoom) failed: {e}")
-
-    # ─── Pass 4: ZOOM-FOCUS on JEWELRY DETAILS ───
-    print("[VISION] Pass 4/4: ZOOM-FOCUS on jewelry details...")
-    jewelry_pieces_str = json.dumps(result.get("jewelry_pieces", []), indent=2, ensure_ascii=False)[:1500]
-    jewelry_zoom_prompt = f"""You are zooming into this image to verify JEWELRY details with pixel-level precision.
-The current jewelry analysis is:
-{jewelry_pieces_str}
-
-NOW ZOOM INTO EACH JEWELRY PIECE INDIVIDUALLY and verify:
-
-For EACH visible jewelry piece, check:
-
-1. **STONE COLORS** — This is the #1 mistake. ZOOM INTO each stone:
-   - Are the stones really the color described? Or did the previous pass default to white/clear?
-   - Common Indian bridal stone colors: GREEN (emerald), RED (ruby), BLUE (sapphire), PINK, MULTICOLOR
-   - If stones described as "white/clear" → RE-EXAMINE closely. Are they actually colored?
-
-2. **DESIGN PATTERN** — ZOOM INTO the piece's overall structure:
-   - What is the arrangement of elements? (e.g., "row of 5 oval stones with drops beneath each")
-   - Is the current design_pattern description accurate?
-
-3. **MISSING PIECES** — Look at the ENTIRE image for ANY jewelry not yet described:
-   - Nose ring/stud (zoom into both nostrils)
-   - Rings on fingers
-   - Anklets
-   - Hair pins/clips
-   - Maang tikka side chains
-
-4. **HANGING ELEMENTS** — ZOOM INTO any drops/dangles:
-   - Pearl drops: exact count, size, arrangement
-   - Chain drops: length, thickness
-   - Bead strands: color, material, count
-
-Return ONLY a JSON object with corrections:
-```json
-{{
-  "jewelry_pieces": [
-    {{
-      "type": "corrected piece type",
-      "design_pattern": "verified/corrected design pattern",
-      "stones": "VERIFIED stone colors with HEX — corrected if wrong",
-      "description": "complete corrected description"
-    }}
-  ],
-  "jewelry_reproduction_checklist": "updated if needed"
-}}
-```
-ONLY include jewelry_pieces that need correction. If a piece is accurate, omit it.
-If you find NEW pieces not in the current list, ADD them as new entries."""
-
-    try:
-        zoom_jewelry = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=[image_part, jewelry_zoom_prompt],
-            config=types.GenerateContentConfig(temperature=0.1),
-        )
-        jewelry_updates = _parse_json_response(zoom_jewelry.text)
-        if jewelry_updates:
-            print(f"[VISION] Pass 4 complete. Jewelry zoom found {len(jewelry_updates)} corrections/additions.")
-            result = _deep_merge(result, jewelry_updates)
-        else:
-            print("[VISION] Pass 4 complete. No jewelry corrections needed.")
-    except Exception as e:
-        print(f"[VISION] ⚠️ Pass 4 (jewelry zoom) failed: {e}")
-
-    print(f"[VISION] ✅ Agentic analysis complete (4 passes). Final: {len(result)} fields.")
+    result = _parse_json_response(response.text)
+    print(f"[VISION] ✅ Analysis complete. Got {len(result)} fields.")
     return result
 
 
