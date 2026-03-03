@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI Virtual Try-On — Direct clothing transfer with verification">
+    <meta name="description" content="AI Virtual Try-On — Outfit analysis + clothing transfer with verification">
     <title>Virtual Try-On — AI Clothing Transfer</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon"
@@ -19,11 +19,11 @@
             <div class="logo-icon">👗</div>
             <div>
                 <h1>Virtual Try-On</h1>
-                <p class="header-sub">Direct Image-to-Image Clothing Transfer with AI Verification</p>
+                <p class="header-sub">Vision Analysis → Image Generation with AI Verification</p>
             </div>
         </div>
         <div class="header-badges">
-            <span class="badge badge-purple">Gemini 2.5 Flash</span>
+            <span class="badge badge-purple">Gemini 3 Flash</span>
             <span class="badge badge-pink">Virtual Try-On</span>
             <span class="badge badge-green">Auto-Verify</span>
         </div>
@@ -40,6 +40,11 @@
     <!-- Pipeline Progress -->
     <div class="container">
         <div class="pipeline-progress" id="pipeline-progress">
+            <div class="pipeline-step" id="pipe-analyze">
+                <div class="pipe-icon">🔍</div>
+                <div class="pipe-label">Analyze</div>
+            </div>
+            <div class="pipe-connector"></div>
             <div class="pipeline-step" id="pipe-generate">
                 <div class="pipe-icon">✨</div>
                 <div class="pipe-label">Generate</div>
@@ -48,11 +53,6 @@
             <div class="pipeline-step" id="pipe-verify">
                 <div class="pipe-icon">🔎</div>
                 <div class="pipe-label">Verify</div>
-            </div>
-            <div class="pipe-connector"></div>
-            <div class="pipeline-step" id="pipe-refine">
-                <div class="pipe-icon">🔧</div>
-                <div class="pipe-label">Refine</div>
             </div>
         </div>
     </div>
@@ -69,7 +69,7 @@
                 <div class="upload-zone" id="source-upload">
                     <div class="upload-icon">📷</div>
                     <div class="upload-text">Click or drag to upload</div>
-                    <div class="upload-hint">The dress & jewelry from this image will be copied</div>
+                    <div class="upload-hint">The dress & jewelry from this image will be analyzed</div>
                     <input type="file" id="source-input" accept="image/*">
                 </div>
             </div>
@@ -88,9 +88,100 @@
         </div>
     </section>
 
+    <!-- ============ JSON Analysis Panel ============ -->
+    <section class="container section-row" id="analysis-section" style="display:none;">
+        <div class="step-label"><span class="step-num">📋</span> Outfit Analysis (JSON)</div>
+        <div class="card" style="width:100%;">
+            <div class="card-title">
+                <div class="dot orange"></div>
+                Extracted Outfit Details
+                <span class="analysis-status" id="analysis-status"></span>
+            </div>
+            <div class="json-display-container" id="json-display">
+                <pre class="json-content" id="json-content">Analyzing...</pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ Analyze & Upscale Pipeline ============ -->
+    <section class="container section-row" id="upscale-section">
+        <div class="step-label"><span class="step-num">🔬</span> Analyze & Upscale</div>
+        <div class="row-grid">
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot purple"></div>
+                    Upload Low-Quality Image
+                </div>
+                <div class="upload-zone" id="upscale-upload">
+                    <div class="upload-icon">🔍</div>
+                    <div class="upload-text">Click or drag to upload</div>
+                    <div class="upload-hint">Low-quality image → Upscale → Detailed analysis</div>
+                    <input type="file" id="upscale-input" accept="image/*">
+                </div>
+                <div class="upscale-controls">
+                    <label class="upscale-factor-label">Upscale Factor:</label>
+                    <div class="upscale-factor-selector">
+                        <button class="factor-btn active" data-factor="x2">×2</button>
+                        <button class="factor-btn" data-factor="x4">×4</button>
+                    </div>
+                </div>
+                <button class="btn btn-upscale" id="upscale-btn" disabled>
+                    <div class="spinner"></div>
+                    <span class="btn-text">🔬 Analyze & Upscale</span>
+                </button>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <div class="dot green"></div>
+                    Original Preview
+                    <span class="dimension-label" id="upscale-orig-dim"></span>
+                </div>
+                <div class="output-image-container" id="upscale-orig-display">
+                    <div class="output-placeholder">
+                        <div class="icon">🖼️</div>
+                        <p>Original image preview</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upscale Results: side-by-side comparison -->
+        <div class="upscale-results" id="upscale-results" style="display:none;">
+            <div class="upscale-comparison">
+                <div class="upscale-result-card">
+                    <div class="card-title">
+                        <div class="dot orange"></div>
+                        Original Analysis
+                        <span class="dimension-label" id="upscale-orig-size"></span>
+                    </div>
+                    <div class="json-display-container upscale-json">
+                        <pre class="json-content" id="upscale-orig-json">—</pre>
+                    </div>
+                </div>
+                <div class="upscale-result-card">
+                    <div class="card-title">
+                        <div class="dot green"></div>
+                        Upscaled Analysis
+                        <span class="dimension-label" id="upscale-new-size"></span>
+                    </div>
+                    <div class="output-image-container upscale-img-preview" id="upscale-new-display">
+                        <div class="output-placeholder">
+                            <div class="icon">✨</div>
+                            <p>Upscaled image</p>
+                        </div>
+                    </div>
+                    <div class="json-display-container upscale-json">
+                        <pre class="json-content" id="upscale-new-json">—</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- ============ STEP 2: Target Upload + Generate ============ -->
     <section class="container section-row">
-        <div class="step-label"><span class="step-num">2</span> Target Person & Generate</div>
+        <div class="step-label"><span class="step-num">2</span> Target Person <span
+                class="optional-tag">(Optional)</span> & Generate</div>
         <div class="row-grid">
             <div class="card">
                 <div class="card-title">
@@ -100,7 +191,7 @@
                 <div class="upload-zone" id="target-upload">
                     <div class="upload-icon">🧑</div>
                     <div class="upload-text">Click or drag to upload</div>
-                    <div class="upload-hint">This person will wear the source outfit</div>
+                    <div class="upload-hint">Optional — skip to generate dress only</div>
                     <input type="file" id="target-input" accept="image/*">
                 </div>
                 <div class="user-instructions-wrapper">
@@ -115,7 +206,7 @@
                 </div>
                 <button class="btn btn-generate" id="generate-btn" disabled>
                     <div class="spinner"></div>
-                    <span class="btn-text">✨ Generate — Copy Outfit</span>
+                    <span class="btn-text">✨ Generate</span>
                 </button>
             </div>
             <div class="card">
@@ -172,7 +263,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Powered by <strong>Gemini 2.5 Flash</strong> (Generation + Verification) — Direct Image-to-Image Pipeline</p>
+        <p>Powered by <strong>Gemini 3 Flash</strong> — Vision Analysis → Image Generation Pipeline</p>
     </footer>
 
     <script src="/static/script.js"></script>

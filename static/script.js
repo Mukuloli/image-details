@@ -1,11 +1,13 @@
 // ===================================================================
-// Direct Image-to-Image Virtual Try-On — Client-Side Logic
+// Vision-First Virtual Try-On — Client-Side Logic
+// Flow: Upload Source → Analyze (show JSON) → Generate from JSON
 // ===================================================================
 
 // State
 let sourceImageFile = null;
 let targetImageFile = null;
 let sourceImageDataUrl = null;
+let analysisData = null;  // Stores the extracted JSON from vision analysis
 
 // DOM Elements
 const sourceUpload = document.getElementById('source-upload');
@@ -82,8 +84,11 @@ function handleFile(file, zone, previewEl, onFile) {
 setupUploadZone(sourceUpload, sourceInput, originalDisplay, (file, dataUrl) => {
     sourceImageFile = file;
     sourceImageDataUrl = dataUrl;
-    checkReady();
-    showStatus('info', 'Source image loaded');
+    analysisData = null; // Reset analysis when new source uploaded
+    showStatus('info', '📷 Source image loaded — analyzing outfit details...');
+
+    // Auto-trigger analysis
+    analyzeSource();
 });
 
 setupUploadZone(targetUpload, targetInput, null, (file) => {
@@ -93,9 +98,16 @@ setupUploadZone(targetUpload, targetInput, null, (file) => {
 });
 
 function checkReady() {
-    if (sourceImageFile && targetImageFile) {
+    // Generate button enabled only after analysis is done
+    if (sourceImageFile && analysisData) {
         generateBtn.disabled = false;
-        showStatus('success', '✅ Both images loaded — ready to generate!');
+        if (targetImageFile) {
+            showStatus('success', '✅ Analysis done + Target loaded — ready to generate try-on!');
+        } else {
+            showStatus('success', '✅ Analysis done — ready to generate (add target for try-on)');
+        }
+    } else if (sourceImageFile && !analysisData) {
+        generateBtn.disabled = true;
     }
 }
 
@@ -117,21 +129,23 @@ function hideStatus() {
 // ---------------------------------------------------------------
 
 function setPipelineStep(activeStep) {
-    const steps = ['pipe-generate', 'pipe-verify', 'pipe-refine'];
+    const steps = ['pipe-analyze', 'pipe-generate', 'pipe-verify'];
     const pipeline = document.getElementById('pipeline-progress');
     pipeline.classList.add('visible');
 
     steps.forEach(id => {
         const el = document.getElementById(id);
-        el.classList.remove('active', 'done');
+        if (el) el.classList.remove('active', 'done');
     });
 
     const activeIndex = steps.indexOf(activeStep);
     for (let i = 0; i < activeIndex; i++) {
-        document.getElementById(steps[i]).classList.add('done');
+        const el = document.getElementById(steps[i]);
+        if (el) el.classList.add('done');
     }
     if (activeIndex >= 0) {
-        document.getElementById(steps[activeIndex]).classList.add('active');
+        const el = document.getElementById(steps[activeIndex]);
+        if (el) el.classList.add('active');
     }
 }
 
@@ -142,30 +156,98 @@ function completePipelineStep(stepId) {
 }
 
 function resetPipeline() {
-    const steps = ['pipe-generate', 'pipe-verify', 'pipe-refine'];
+    const steps = ['pipe-analyze', 'pipe-generate', 'pipe-verify'];
     steps.forEach(id => {
         const el = document.getElementById(id);
-        el.classList.remove('active', 'done');
+        if (el) el.classList.remove('active', 'done');
     });
 }
 
 // ---------------------------------------------------------------
-// Generate Image — Direct Pipeline (No Analysis)
+// Step 1: Analyze Source Image — Show JSON
+// ---------------------------------------------------------------
+
+async function analyzeSource() {
+    if (!sourceImageFile) return;
+
+    // Show analysis section
+    const analysisSection = document.getElementById('analysis-section');
+    const jsonContent = document.getElementById('json-content');
+    const analysisStatus = document.getElementById('analysis-status');
+
+    analysisSection.style.display = 'block';
+    jsonContent.textContent = '⏳ Analyzing outfit details...';
+    analysisStatus.textContent = '(analyzing...)';
+    analysisStatus.className = 'analysis-status analyzing';
+
+    setPipelineStep('pipe-analyze');
+    showStatus('info', '🔍 Analyzing outfit — extracting dress & jewelry details...');
+    generateBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('image', sourceImageFile);
+
+    try {
+        const resp = await fetch('/api/analyze', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+            throw new Error(data.error || 'Analysis failed');
+        }
+
+        // Store analysis data
+        analysisData = data.details;
+
+        // Display JSON beautifully
+        jsonContent.textContent = JSON.stringify(analysisData, null, 2);
+        analysisStatus.textContent = '✅ Done';
+        analysisStatus.className = 'analysis-status done';
+
+        completePipelineStep('pipe-analyze');
+        checkReady();
+
+        // Scroll to analysis
+        analysisSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    } catch (err) {
+        jsonContent.textContent = `❌ Analysis failed: ${err.message}\n\nYou can still try generating — click Generate.`;
+        analysisStatus.textContent = '❌ Failed';
+        analysisStatus.className = 'analysis-status failed';
+        showStatus('error', `Analysis failed: ${err.message}`);
+
+        // Still allow generation even if analysis fails
+        analysisData = null;
+        if (sourceImageFile) {
+            generateBtn.disabled = false;
+        }
+        resetPipeline();
+    }
+}
+
+// ---------------------------------------------------------------
+// Step 2: Generate Image from JSON Analysis
 // ---------------------------------------------------------------
 
 generateBtn.addEventListener('click', async () => {
-    if (!targetImageFile || !sourceImageFile) return;
+    if (!sourceImageFile) return;
+
+    const hasTarget = !!targetImageFile;
+    const modeLabel = hasTarget ? 'copying outfit onto target' : 'reproducing dress from source';
 
     generateBtn.disabled = true;
     generateBtn.classList.add('loading');
-    showStatus('info', '🚀 Generating — copying outfit onto target...');
+    showStatus('info', `🚀 Generating — ${modeLabel}...`);
     setPipelineStep('pipe-generate');
 
     generatedDisplay.innerHTML = `
         <div class="output-placeholder">
             <div class="icon">⏳</div>
-            <p>Generating... copying outfit directly</p>
-            <p class="pipeline-hint">Generate → Verify → Refine (if needed)</p>
+            <p>Generating... ${modeLabel}</p>
+            <p class="pipeline-hint">Analyze → Generate → Verify → Refine (if needed)</p>
         </div>`;
 
     // Hide previous results
@@ -179,8 +261,15 @@ generateBtn.addEventListener('click', async () => {
 
     const formData = new FormData();
     formData.append('source_image', sourceImageFile);
-    formData.append('target_image', targetImageFile);
+    if (hasTarget) {
+        formData.append('target_image', targetImageFile);
+    }
     formData.append('user_instructions', userInstructions);
+
+    // Send analysis JSON if available
+    if (analysisData) {
+        formData.append('analysis_json', JSON.stringify(analysisData));
+    }
 
     try {
         // Update status during the long wait
@@ -235,6 +324,7 @@ generateBtn.addEventListener('click', async () => {
         }
 
         // Complete all pipeline steps
+        completePipelineStep('pipe-analyze');
         completePipelineStep('pipe-generate');
         completePipelineStep('pipe-verify');
         completePipelineStep('pipe-refine');
@@ -264,6 +354,10 @@ generateBtn.addEventListener('click', async () => {
                 <p>Generation failed — try again</p>
             </div>`;
         resetPipeline();
+        // Keep analyze step done if it was
+        if (analysisData) {
+            completePipelineStep('pipe-analyze');
+        }
         console.error(err);
     } finally {
         generateBtn.disabled = false;
@@ -357,3 +451,129 @@ function downloadImage(dataUrl, filename) {
     a.click();
     document.body.removeChild(a);
 }
+
+// ---------------------------------------------------------------
+// 🔬 Analyze & Upscale Pipeline
+// ---------------------------------------------------------------
+
+(function initUpscalePipeline() {
+    const upscaleUpload = document.getElementById('upscale-upload');
+    const upscaleInput = document.getElementById('upscale-input');
+    const upscaleBtn = document.getElementById('upscale-btn');
+    const upscaleOrigDisplay = document.getElementById('upscale-orig-display');
+    const upscaleOrigDim = document.getElementById('upscale-orig-dim');
+    const upscaleResults = document.getElementById('upscale-results');
+    const upscaleOrigJson = document.getElementById('upscale-orig-json');
+    const upscaleNewJson = document.getElementById('upscale-new-json');
+    const upscaleOrigSize = document.getElementById('upscale-orig-size');
+    const upscaleNewSize = document.getElementById('upscale-new-size');
+    const upscaleNewDisplay = document.getElementById('upscale-new-display');
+    const factorBtns = document.querySelectorAll('.factor-btn');
+
+    if (!upscaleUpload || !upscaleInput || !upscaleBtn) return;
+
+    let upscaleFile = null;
+    let selectedFactor = 'x2';
+
+    // Factor selector toggle
+    factorBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            factorBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedFactor = btn.dataset.factor;
+        });
+    });
+
+    // Upload zone
+    setupUploadZone(upscaleUpload, upscaleInput, upscaleOrigDisplay, (file, dataUrl) => {
+        upscaleFile = file;
+        upscaleBtn.disabled = false;
+        upscaleResults.style.display = 'none';
+
+        // Show image dimensions
+        const img = new Image();
+        img.onload = () => {
+            upscaleOrigDim.textContent = `${img.width}×${img.height}`;
+        };
+        img.src = dataUrl;
+
+        showStatus('info', '🔍 Image ready — click "Analyze & Upscale" to start');
+    });
+
+    // Upscale button handler
+    upscaleBtn.addEventListener('click', async () => {
+        if (!upscaleFile) return;
+
+        upscaleBtn.disabled = true;
+        upscaleBtn.classList.add('loading');
+        showStatus('info', `🔬 Analyzing + Upscaling (${selectedFactor})... this takes ~30-60s`);
+
+        // Reset results
+        upscaleResults.style.display = 'none';
+        upscaleOrigJson.textContent = '⏳ Analyzing original...';
+        upscaleNewJson.textContent = '⏳ Waiting for upscale...';
+        upscaleNewDisplay.innerHTML = '<div class="output-placeholder"><div class="icon">⏳</div><p>Upscaling...</p></div>';
+
+        const formData = new FormData();
+        formData.append('image', upscaleFile);
+        formData.append('upscale_factor', selectedFactor);
+
+        try {
+            const resp = await fetch('/api/analyze-upscale', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                throw new Error(data.error || 'Upscale pipeline failed');
+            }
+
+            // Show results
+            upscaleResults.style.display = 'block';
+
+            // Original analysis
+            if (data.original_analysis) {
+                upscaleOrigJson.textContent = JSON.stringify(data.original_analysis, null, 2);
+            }
+            if (data.original_size) {
+                upscaleOrigSize.textContent = data.original_size;
+            }
+
+            // Upscaled image + analysis
+            if (data.upscaled_image) {
+                const upImg = `data:image/png;base64,${data.upscaled_image}`;
+                upscaleNewDisplay.innerHTML = `<img src="${upImg}" alt="Upscaled Image">`;
+            } else {
+                upscaleNewDisplay.innerHTML = '<div class="output-placeholder"><div class="icon">⚠️</div><p>Upscaling failed</p></div>';
+            }
+
+            if (data.upscaled_analysis) {
+                upscaleNewJson.textContent = JSON.stringify(data.upscaled_analysis, null, 2);
+            } else if (data.upscale_error) {
+                upscaleNewJson.textContent = `⚠️ ${data.upscale_error}`;
+            }
+
+            if (data.upscaled_size) {
+                upscaleNewSize.textContent = data.upscaled_size;
+            }
+
+            const sizeInfo = data.original_size && data.upscaled_size
+                ? ` (${data.original_size} → ${data.upscaled_size})`
+                : '';
+            showStatus('success', `✅ Analyze & Upscale complete!${sizeInfo}`);
+
+            // Scroll to results
+            upscaleResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        } catch (err) {
+            showStatus('error', `Upscale failed: ${err.message}`);
+            console.error(err);
+        } finally {
+            upscaleBtn.disabled = false;
+            upscaleBtn.classList.remove('loading');
+        }
+    });
+})();
+
